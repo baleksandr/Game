@@ -364,4 +364,3 @@ export class Game {
         location.reload();
     }
 }
-

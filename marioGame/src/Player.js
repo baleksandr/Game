@@ -231,4 +231,3 @@ export class Player {
         this.setInvincible();
     }
 }
-

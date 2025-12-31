@@ -178,5 +178,3 @@ export class Mushroom {
         return distance < 30;
     }
 }
-
-

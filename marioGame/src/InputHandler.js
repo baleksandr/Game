@@ -85,4 +85,3 @@ export class InputHandler {
         return this.keys[code] !== true;
     }
 }
-

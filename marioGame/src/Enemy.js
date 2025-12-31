@@ -163,5 +163,3 @@ export class Enemy {
         animate();
     }
 }
-
-

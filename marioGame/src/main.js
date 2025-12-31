@@ -17,4 +17,3 @@ if (document.readyState === 'loading') {
 } else {
     startGame();
 }
-
