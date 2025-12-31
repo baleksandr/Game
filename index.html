@@ -643,9 +643,10 @@
 
     // Запуск гри
     function launchGame(gameName) {
+        // Статичні URL для GitHub Pages (збілджені версії)
         const gameUrls = {
-            'shooterGame': 'shooterGame/index.html',
-            'marioGame': 'marioGame/index.html',
+            'shooterGame': 'shooterGame/dist/index.html',
+            'marioGame': 'marioGame/dist/index.html',
             'Tetris': 'Tetris/index.html',
             'Snake': 'Snake/main.html',
             'battleShips': 'battleShips/index.html'
@@ -656,14 +657,19 @@
             'marioGame': {port: 5173, name: 'Mario Platformer'}
         };
 
-        if (viteGames[gameName]) {
+        // Перевіряємо чи ми на localhost (розробка) чи на GitHub Pages
+        const isLocalDev = window.location.hostname === 'localhost' || 
+                          window.location.hostname === '127.0.0.1' ||
+                          window.location.protocol === 'file:';
+
+        if (viteGames[gameName] && isLocalDev) {
             const {port, name} = viteGames[gameName];
             const viteUrl = `http://localhost:${port}`;
 
             // Спробуємо перевірити чи сервер запущений
             checkViteServer(viteUrl, gameName, name, port);
         } else {
-            // Для звичайних HTML ігор - просто відкриваємо
+            // Для GitHub Pages або звичайних HTML ігор - відкриваємо статичну версію
             window.location.href = gameUrls[gameName];
         }
     }
