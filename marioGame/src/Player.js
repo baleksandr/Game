@@ -22,6 +22,14 @@ export class Player {
         this.invincibleTimer = 0;
         this.blinkTimer = 0;
         
+        // Механіка великого Маріо
+        this.isBig = false;
+        this.isGrowing = false;
+        this.isShrinking = false;
+        this.sizeAnimProgress = 0;
+        this.baseWidth = 40;
+        this.baseHeight = 50;
+        
         this.sprite = this.createSprite();
     }
     
@@ -106,8 +114,11 @@ export class Player {
         
         container.addChild(this.marioGraphics);
         
+        // Встановлюємо pivot внизу спрайта щоб масштабування було від ніг
+        container.pivot.y = this.baseHeight;
+        
         container.x = this.x;
-        container.y = this.y;
+        container.y = this.y + this.baseHeight; // Компенсуємо pivot
         
         console.log('🍄 Mario created with Graphics!');
         
@@ -118,16 +129,22 @@ export class Player {
         const input = this.game.inputHandler;
         
         // Горизонтальний рух
+        const sizeScale = this.isBig ? 2 : 1;
+        
         if (input.isKeyDown('ArrowLeft') || input.isKeyDown('KeyA')) {
             this.velocityX = -this.speed;
-            this.facingRight = false;
-            this.sprite.scale.x = -1;
-            this.sprite.pivot.x = this.width;
+            if (this.facingRight) {
+                this.facingRight = false;
+                this.sprite.scale.x = -sizeScale;
+                this.sprite.pivot.x = this.baseWidth;
+            }
         } else if (input.isKeyDown('ArrowRight') || input.isKeyDown('KeyD')) {
             this.velocityX = this.speed;
-            this.facingRight = true;
-            this.sprite.scale.x = 1;
-            this.sprite.pivot.x = 0;
+            if (!this.facingRight) {
+                this.facingRight = true;
+                this.sprite.scale.x = sizeScale;
+                this.sprite.pivot.x = 0;
+            }
         } else {
             this.velocityX *= 0.8; // Тертя
             if (Math.abs(this.velocityX) < 0.1) this.velocityX = 0;
@@ -139,6 +156,7 @@ export class Player {
             this.velocityY = -this.jumpForce;
             this.isGrounded = false;
             this.isJumping = true;
+            this.game.soundManager.playJump();
         }
         
         // Скидаємо isJumping коли кнопка відпущена
@@ -162,14 +180,14 @@ export class Player {
         // Скидаємо isGrounded для перевірки колізій
         this.isGrounded = false;
         
-        // Оновлюємо позицію спрайта
+        // Оновлюємо позицію спрайта (враховуємо pivot внизу)
         this.sprite.x = this.x;
-        this.sprite.y = this.y;
+        this.sprite.y = this.y + this.height;
         
         // Анімація бігу
         if (Math.abs(this.velocityX) > 0.5 && this.isGrounded) {
             const bobAmount = Math.sin(Date.now() / 80) * 2;
-            this.sprite.y = this.y + bobAmount;
+            this.sprite.y = this.y + this.height + bobAmount;
         }
         
         // Обробка невразливості
@@ -217,6 +235,7 @@ export class Player {
                 if (platform.type === 'question' && !platform.isUsed) {
                     platform.activate();
                     this.game.addScore(50);
+                    this.game.soundManager.playBump();
                     // Спавнимо гриб!
                     this.game.spawnMushroom(platform.x + platform.width / 2, platform.y - 30);
                 }
@@ -225,6 +244,7 @@ export class Player {
                 if (platform.type === 'brick' && !platform.isBroken) {
                     platform.breakBrick();
                     this.game.addScore(25);
+                    this.game.soundManager.playBreakBlock();
                 }
                 
                 return true;
@@ -280,6 +300,118 @@ export class Player {
         this.y = 400;
         this.velocityX = 0;
         this.velocityY = 0;
+        this.isBig = false;
+        this.updateSize();
         this.setInvincible();
+    }
+    
+    /**
+     * Збільшує Маріо вдвічі (з'їв гриб)
+     */
+    grow() {
+        if (this.isBig || this.isGrowing) return;
+        
+        this.isGrowing = true;
+        this.sizeAnimProgress = 0;
+        const direction = this.facingRight ? 1 : -1;
+        const feetY = this.y + this.height; // Позиція ніг (незмінна!)
+        
+        // Анімація збільшення (pivot внизу - росте вгору!)
+        const animate = () => {
+            this.sizeAnimProgress += 0.1;
+            
+            // Пульсуюча анімація під час зростання
+            const pulse = Math.sin(this.sizeAnimProgress * 15) * 0.15 + 1;
+            const scale = 1 + this.sizeAnimProgress * pulse;
+            
+            this.sprite.scale.x = scale * direction;
+            this.sprite.scale.y = scale;
+            
+            // Sprite.y залишається на місці (ноги на землі)
+            this.sprite.y = feetY;
+            
+            if (this.sizeAnimProgress < 1) {
+                requestAnimationFrame(animate);
+            } else {
+                // Завершено - встановлюємо великий розмір
+                this.isBig = true;
+                this.isGrowing = false;
+                this.width = this.baseWidth * 2;
+                this.height = this.baseHeight * 2;
+                this.y = feetY - this.height; // Оновлюємо логічну позицію
+                this.updateSize();
+                console.log('🍄 Маріо став великим!');
+            }
+        };
+        
+        animate();
+    }
+    
+    /**
+     * Зменшує Маріо (отримав удар)
+     */
+    shrink() {
+        if (!this.isBig || this.isShrinking) return;
+        
+        this.isShrinking = true;
+        this.sizeAnimProgress = 1;
+        const direction = this.facingRight ? 1 : -1;
+        const feetY = this.y + this.height; // Позиція ніг (незмінна!)
+        
+        // Анімація зменшення (pivot внизу - зменшується вгору!)
+        const animate = () => {
+            this.sizeAnimProgress -= 0.1;
+            
+            // Мигання під час зменшення
+            const blink = Math.sin(this.sizeAnimProgress * 20) > 0;
+            this.sprite.alpha = blink ? 1 : 0.4;
+            
+            const scale = 1 + this.sizeAnimProgress;
+            this.sprite.scale.x = scale * direction;
+            this.sprite.scale.y = scale;
+            
+            // Sprite.y залишається на місці (ноги на землі)
+            this.sprite.y = feetY;
+            
+            if (this.sizeAnimProgress > 0) {
+                requestAnimationFrame(animate);
+            } else {
+                // Завершено - встановлюємо малий розмір
+                this.isBig = false;
+                this.isShrinking = false;
+                this.sprite.alpha = 1;
+                this.width = this.baseWidth;
+                this.height = this.baseHeight;
+                this.y = feetY - this.height; // Оновлюємо логічну позицію
+                this.updateSize();
+                this.setInvincible();
+                console.log('💔 Маріо став маленьким!');
+            }
+        };
+        
+        animate();
+    }
+    
+    /**
+     * Оновлює розмір колізії та спрайта
+     */
+    updateSize() {
+        if (this.isBig) {
+            this.width = this.baseWidth * 2;
+            this.height = this.baseHeight * 2;
+            this.sprite.scale.x = this.facingRight ? 2 : -2;
+            this.sprite.scale.y = 2;
+            this.sprite.pivot.x = this.facingRight ? 0 : this.baseWidth;
+        } else {
+            this.width = this.baseWidth;
+            this.height = this.baseHeight;
+            this.sprite.scale.x = this.facingRight ? 1 : -1;
+            this.sprite.scale.y = 1;
+            this.sprite.pivot.x = this.facingRight ? 0 : this.baseWidth;
+        }
+        
+        // Оновлюємо позицію спрайта (pivot внизу!)
+        this.sprite.x = this.x;
+        this.sprite.y = this.y + this.height;
     }
 }

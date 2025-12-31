@@ -6,6 +6,7 @@ import { Enemy } from './Enemy.js';
 import { InputHandler } from './InputHandler.js';
 import { Background } from './Background.js';
 import { Mushroom } from './Mushroom.js';
+import { SoundManager } from './SoundManager.js';
 
 export class Game {
     constructor() {
@@ -17,6 +18,7 @@ export class Game {
         this.mushrooms = []; // Гриби
         this.inputHandler = null;
         this.background = null;
+        this.soundManager = null;
         
         this.score = 0;
         this.lives = 3;
@@ -57,6 +59,7 @@ export class Game {
         // Ініціалізуємо компоненти гри
         this.background = new Background(this);
         this.inputHandler = new InputHandler(this);
+        this.soundManager = new SoundManager();
         
         // Створюємо рівень
         this.createLevel();
@@ -65,12 +68,29 @@ export class Game {
         this.player = new Player(this);
         this.worldContainer.addChild(this.player.sprite);
         
+        // Створюємо кнопку звуку
+        this.createSoundButton();
+        
         // Запускаємо ігровий цикл
         this.app.ticker.add((ticker) => this.gameLoop(ticker));
         
-        // Ховаємо екран завантаження
+        // Ховаємо екран завантаження та запускаємо музику
         setTimeout(() => {
             document.getElementById('loading-screen').classList.add('hidden');
+            // Запускаємо фонову музику після взаємодії
+            document.addEventListener('click', () => {
+                this.soundManager.unlock();
+                if (!this.soundManager.isMusicPlaying && !this.isGameOver) {
+                    this.soundManager.startBackgroundMusic();
+                }
+            }, { once: true });
+            
+            document.addEventListener('keydown', () => {
+                this.soundManager.unlock();
+                if (!this.soundManager.isMusicPlaying && !this.isGameOver) {
+                    this.soundManager.startBackgroundMusic();
+                }
+            }, { once: true });
         }, 2000);
         
         console.log('🎮 Game initialized!');
@@ -195,6 +215,47 @@ export class Game {
         this.flagX = x;
     }
     
+    createSoundButton() {
+        const btn = document.createElement('button');
+        btn.id = 'sound-btn';
+        btn.innerHTML = '🔊';
+        btn.style.cssText = `
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            border: 3px solid #fff;
+            background: rgba(0, 0, 0, 0.6);
+            color: white;
+            font-size: 24px;
+            cursor: pointer;
+            z-index: 1000;
+            transition: all 0.2s;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+        `;
+        
+        btn.addEventListener('mouseover', () => {
+            btn.style.transform = 'scale(1.1)';
+        });
+        
+        btn.addEventListener('mouseout', () => {
+            btn.style.transform = 'scale(1)';
+        });
+        
+        btn.addEventListener('click', () => {
+            const enabled = this.soundManager.toggle();
+            btn.innerHTML = enabled ? '🔊' : '🔇';
+            
+            if (enabled && !this.isGameOver) {
+                this.soundManager.startBackgroundMusic();
+            }
+        });
+        
+        document.body.appendChild(btn);
+    }
+    
     gameLoop(ticker) {
         if (this.isGameOver || this.isPaused) return;
         
@@ -245,6 +306,7 @@ export class Game {
             if (!coin.collected && this.player.checkCoinCollision(coin)) {
                 coin.collect();
                 this.addScore(100);
+                this.soundManager.playCoin();
             }
         });
         
@@ -257,6 +319,7 @@ export class Game {
                     enemy.die();
                     this.player.bounce();
                     this.addScore(200);
+                    this.soundManager.playStompEnemy();
                 } else if (!this.player.isInvincible) {
                     this.playerHit();
                 }
@@ -268,7 +331,14 @@ export class Game {
             if (!mushroom.collected && mushroom.checkPlayerCollision(this.player)) {
                 mushroom.collect();
                 this.addScore(500);
-                this.addLife();
+                
+                // Якщо вже великий - дає життя, інакше - збільшує
+                if (this.player.isBig) {
+                    this.addLife();
+                } else {
+                    this.player.grow();
+                }
+                this.soundManager.playPowerUp();
             }
         });
         
@@ -313,8 +383,17 @@ export class Game {
     }
     
     playerHit() {
+        // Якщо великий - зменшуємо, але не втрачаємо життя
+        if (this.player.isBig) {
+            this.player.shrink();
+            this.soundManager.playHurt();
+            return;
+        }
+        
+        // Якщо малий - втрачаємо життя
         this.lives--;
         document.getElementById('lives').textContent = this.lives;
+        this.soundManager.playHurt();
         
         if (this.lives <= 0) {
             this.gameOver();
@@ -326,6 +405,7 @@ export class Game {
     playerDied() {
         this.lives--;
         document.getElementById('lives').textContent = this.lives;
+        this.soundManager.playHurt();
         
         if (this.lives <= 0) {
             this.gameOver();
@@ -336,11 +416,13 @@ export class Game {
     
     gameOver() {
         this.isGameOver = true;
+        this.soundManager.playGameOver();
         this.showOverlay('GAME OVER', `Очки: ${this.score}`);
     }
     
     winGame() {
         this.isGameOver = true;
+        this.soundManager.playLevelComplete();
         this.showOverlay('🎉 ПЕРЕМОГА! 🎉', `Очки: ${this.score}`);
     }
     
