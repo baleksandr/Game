@@ -1,0 +1,243 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <link rel="icon" href="img/favicon.ico" type="image/x-icon">
+    <link rel="stylesheet" type="text/css" href="style/style.css">
+    <!--    <link href='https://unpkg.com/css.gg@2.0.0/icons/css/chevron-right.css' rel='stylesheet'>-->
+    <script src="https://kit.fontawesome.com/e0cdb8c08f.js" crossorigin="anonymous"></script>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.5.0/css/font-awesome.min.css">
+
+    <title>Tetris</title>
+</head>
+<body>
+
+<div class="main">
+    <div class="change_background"></div>
+
+    <div class="controls">
+        <div class="arrows">
+            <!-- Стрелка влево -->
+            <div id="modal-container">
+                <div class="modal-background">
+                    <div class="modal">
+                        <h2>Button Rules</h2>
+                        <!--                        <p>Hear me roar.</p>-->
+                        <div class="infoDescription">
+                            <div class="infoPlace">
+                                <img class="inform" src="img/rotate.jpg">
+                                <p class="infoTitle">- Rotating a figure, changing its position</p>
+                            </div>
+                            <div class="infoPlace">
+                                <img class="inform" src="img/left.jpg">
+                                <p class="infoTitle">- Move figure left</p>
+                            </div>
+                            <div class="infoPlace">
+                                <img class="inform" src="img/down.jpg">
+                                <p class="infoTitle">- Move figure down</p>
+                            </div>
+                            <div class="infoPlace">
+                                <img class="inform" src="img/right.jpg">
+                                <p class="infoTitle">- Move figure right</p>
+                            </div>
+                            <div class="infoPlace">
+                                <img class="inform" src="img/drop.jpg">
+                                <p class="infoTitle">- Drop figure down</p>
+                            </div>
+                            <div class="infoPlace">
+                                <img class="inform" src="img/restart_game.jpg">
+                                <p class="infoTitle">- Restart game and all User progress</p>
+                            </div>
+                        </div>
+
+
+                        <!--                        <svg class="modal-svg" xmlns="http://www.w3.org/2000/svg" width="100px" height="100px" preserveAspectRatio="none">-->
+                        <!--                            <rect x="0" y="0" fill="none" width="20" height="20" rx="3" ry="3"></rect>-->
+                        <!--                        </svg>-->
+                    </div>
+                </div>
+            </div>
+            <div class="content">
+                <div class="buttons">
+                    <div id="one" class="button">i</div>
+                    <!--                    <i id="one" class="fa fa-pied-piper-alt"></i>-->
+                </div>
+            </div>
+            <!--            <div class="arrowPosition">-->
+            <div class="arrowMarge">
+                <div class="top">
+                    <!-- Стрелка вверх -->
+                    <svg class="strelka-top-1 ArrowUp" viewbox="0 0 60 100">
+                        <path d="M 50,0 L 60,10 L 20,50 L 60,90 L 50,100 L 0,50 Z"></path>
+                    </svg>
+
+                </div>
+                <div class="bottomArea">
+                    <svg class="strelka-left-1 ArrowLeft" viewbox="0 0 60 100">
+                        <path d="M 50,0 L 60,10 L 20,50 L 60,90 L 50,100 L 0,50 Z"></path>
+                    </svg>
+                    <!-- Стрелка вниз -->
+                    <svg class="strelka-bottom-1 ArrowDown" viewbox="0 0 60 100">
+                        <path d="M 50,0 L 60,10 L 20,50 L 60,90 L 50,100 L 0,50 Z"></path>
+                    </svg>
+
+                    <!-- Стрелка вправо -->
+                    <svg class="strelka-right-1 ArrowRight" viewbox="0 0 60 100">
+                        <path d="M 50,0 L 60,10 L 20,50 L 60,90 L 50,100 L 0,50 Z"></path>
+                    </svg>
+
+                </div>
+                <button class="dropDownBtn drop">DROP</button>
+                <div>
+                    <!--                <div type="button" class="restart">Restart Game</div>-->
+                    <button class="restart">Restart Game</button>
+                </div>
+            </div>
+
+            <div class="results_block">
+                <div class="resultActions">
+                    <div class="results_title">Results</div>
+                    <button class="clear_results">Clear</button>
+                </div>
+
+                <div class="results"></div>
+            </div>
+        </div>
+        <div>
+            <div class="top_block">
+                <div class="timeArea">
+                    <div class="topText">Play FUN</div>
+                    <div class="localtime"></div>
+                </div>
+                <div>
+<!--                    <div><img class="settings" src="img/settings.png" title="Settings">-->
+                    <div><div class="loader"></div>
+                        <div class="modal_settings">
+                            <div class="change_back">Background</div>
+                            <input type="color" id="change_block_color"/>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+
+            <div class="audio">
+                <div class="buttonControls">
+                    <div class="soundButtonsControls">
+                        <div><img id="play" src="img/icons8-play_2.png" title="Play/Pause button"></div>
+                        <div><img id="previous" src="img/icons8-prev_2.png" title="Previous track"></div>
+                        <div><img id="next" src="img/icons8-next_2.png" title="Next track"></div>
+                        <div><img id="volumeDown" src="img/volumeDown_2.png" title="Volume Down"></div>
+                        <div><img id="volumeMute" src="img/mute_2.png" title="Volume Mute"></div>
+                        <div><img id="volumeUp" src="img/volumeUp_2.png" title="Volume Up"></div>
+                        <div><img id="mixing" src="img/around.png" title="Mix or round sounds"></div>
+                        <div class="sound"></div>
+                    </div>
+                    <div class="output">
+                        <div class="marquee"><span>Welcome to the Tetris game :) </span></div>
+                        <!--                        <div>  <audio controls src="/media/cc0-audio/t-rex-roar.mp3"></audio></div>-->
+                        <div class="btn-wrap">
+                            <i class="active fas fa-chevron-right"></i>
+                            <div class="rightSoundMenu"></div>
+                        </div>
+                    </div>
+                    <div class="trackArea">
+                        <div class="current-time">00:00</div>
+                        <input type="range" name="track" min="1" max="100" value="0"
+                               class="seek_slider" onchange="seekTimeTo()">
+                        <div class="total-duration">00:00</div>
+                        <!--                        <input type="range"  name="track" min="1" max="100" value="0"-->
+                        <!--                               class="seek_slider" onchange="seekTimeTo()">-->
+                        <!--                        <div id="result">0.00/0.00</div>-->
+                    </div>
+
+                </div>
+
+
+            </div>
+            <div class="grid"></div>
+        </div>
+
+        <div class="playButtonBlock">
+            <!--            <div>-->
+            <!--&lt;!&ndash;                <div type="button" class="restart">Restart Game</div>&ndash;&gt;-->
+            <!--                <button class="restart">Restart Game</button>-->
+            <!--            </div>-->
+            <div class="playActionBlock">
+                <div class="playGame" onclick="this.classList.toggle('active')">
+                    <div class="fondo"></div>
+                    <div class="icono">
+                        <div class="parte izquierda"></div>
+                        <div class="parte derecha"></div>
+                    </div>
+                    <div class="puntero"></div>
+                </div>
+                <div class="containerTime">
+                    <div class="title">Time</div>
+                    <div class="timer block">
+                        <div class="time hour">00 :</div>
+                        <div class="time minutes">00 :</div>
+                        <div class="time seconds">00 :</div>
+                        <div class="time miliseconds">00</div>
+                    </div>
+                </div>
+                <div class="scoreBlock">
+                    <div class="scoreName">Score:</div>
+                    <div class="score">0</div>
+                </div>
+                <div class="bestScoreBlock">
+                    <div class="bestScoreName">Best Score:</div>
+                    <div class="bestScore">0</div>
+                </div>
+                <div class="speedBlock">
+                    <div class="speedName">Speed level:</div>
+                    <div class="speed">1</div>
+                </div>
+                <div class="collectedBlock">
+                    <div class="collectedName">Collected lines:</div>
+                    <div class="collected">0</div>
+                </div>
+                <div class="nextElementBlock">
+                    <div class="line"></div>
+                    <div class="nextElementTitle">Next element</div>
+                    <div class="nextElement"></div>
+                </div>
+
+
+            </div>
+        </div>
+        <div class="overlay">
+            <div class="btn-restart">
+                <div class="titleGameOver">
+                    <div class="game">GAME</div>
+                    <div class="over">OVER</div>
+                </div>
+                <button class="rest">Restart</button>
+            </div>
+        </div>
+        <div class="overlayAlert">
+            <div class="btn-restartAlert">
+                <div class="titleGameOverAlert">
+                    <div class="gameAlert">DO YOU WANT TO RESTART THE GAME?</div>
+                </div>
+                <div class="alertBtn">
+                    <button class="alertYes">YES</button>
+                    <button class="alertNo">NO</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<script src="script.js"></script>
+<script src="tetrisSound.js"></script>
+<script src="moveArrows.js"></script>
+<script src="updateSpeed.js"></script>
+<script src="tetrisTimer.js"></script>
+<script src="moveActionsItems.js"></script>
+
+</body>
+</html>

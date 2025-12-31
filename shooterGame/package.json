@@ -1,0 +1,22 @@
+{
+  "name": "space-shooter",
+  "version": "1.0.0",
+  "description": "Космічний шутер на PixiJS з Spine анімаціями",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "pixi.js": "^8.6.6",
+    "@esotericsoftware/spine-pixi-v8": "^4.2.66"
+  },
+  "devDependencies": {
+    "vite": "^6.0.5"
+  },
+  "keywords": ["game", "shooter", "pixijs", "spine", "animation"],
+  "author": "",
+  "license": "MIT"
+}
+

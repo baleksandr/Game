@@ -1,0 +1,22 @@
+{
+  "name": "mario-platformer",
+  "version": "1.0.0",
+  "description": "Платформер в стилі Mario на PixiJS",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "pixi.js": "^8.6.6"
+  },
+  "devDependencies": {
+    "vite": "^6.0.5"
+  },
+  "keywords": ["game", "platformer", "pixijs", "mario"],
+  "author": "",
+  "license": "MIT"
+}
+
+

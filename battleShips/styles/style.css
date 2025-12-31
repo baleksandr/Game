@@ -1,0 +1,744 @@
+* {
+    margin: 0;
+}
+
+body {
+    background: url(../img/more_10.png) no-repeat;
+    top: 0;
+    left: 0;
+    /*width: 100%;*/
+    /*height: 100%;*/
+    height: 100vh;
+    animation: 2s ease show;
+    justify-content: center;
+    align-items: center;
+    user-select: none;
+    background-size: 100% 100%;
+}
+
+.board {
+    display: grid;
+    grid-template-columns: repeat(10, 30px);
+    grid-template-rows: repeat(10, 30px);
+    gap: 2px;
+    padding: 20px 20px 20px 0;
+
+}
+
+.boardField {
+    display: flex;
+    width: 100%;
+    justify-content: center;
+    /*padding: 20px;*/
+    padding-top: 20px;
+
+}
+
+.cell {
+    width: 30px;
+    height: 30px;
+    background-color: #075679;
+    /*background: url(../img/more_5.png);*/
+    border: 1px solid #40bcd3;
+    font-family: 'Beau Rivage', cursive;
+    color: black;
+    /*margin: 1px 1px 1px 1px;*/
+    font-size: 12px;
+}
+
+.cell.ship {
+    /*background-color: #0707a1;*/
+    background: url('../img/sheep_6.png') no-repeat center/contain;
+
+
+}
+
+.cell.hit {
+    /*background-color: red;*/
+    background: red url('../img/sheep_6.png') no-repeat center/contain;
+
+}
+
+.cell.miss {
+    background-color: white;
+}
+
+.cell.explosion {
+    background-color: yellow !important;
+    border: 1px solid orange;
+}
+
+.userNumb {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 20px;
+    font-weight: bold;
+    color: #6868de;
+    border: 2px solid #33a8ce;
+    border-radius: 5px;
+}
+
+.numbers > div {
+    padding-left: 7px;
+    color: #ecedf1;
+    border: 1px solid #0c0c42;
+    /*box-shadow:  0 0 5px 5px;*/
+    user-select: none;
+}
+
+.winAlert {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(12, 38, 59, 0.72);
+    display: none;
+    justify-content: center;
+    align-items: center;
+    /*display: flex;*/
+}
+
+.winPopup {
+    display: flex;
+    flex-direction: column;
+    width: 55vh;
+    height: 28vh;
+    background-color: rgba(2, 41, 119, 0.75);
+    border-radius: 15px;
+    border: 5px solid rgba(255, 255, 0, 0.62);
+    font-size: 35px;
+    color: #8cb5d0;
+    box-shadow: 0 2px 10px 10px;
+    /*cursor: pointer;*/
+    font-family: 'Beau Rivage', cursive;
+    padding: 10px 20px;
+    align-items: center;
+    align-content: space-between;
+    justify-content: space-between;
+}
+
+.restart {
+    width: 171px;
+    background-color: rgba(4, 45, 138, 0.75);
+    border-radius: 15px;
+    /* border: 5px solid rgba(255, 255, 0, 0.62); */
+    font-size: 36px;
+    color: #8cb5d0;
+    box-shadow: 0 2px 10px 10px;
+    cursor: pointer;
+    font-family: 'Beau Rivage', cursive;
+    /* padding: 10px 20px; */
+    transition: transform 0.3s;
+    margin-bottom: 10px;
+}
+
+/*.topPanel {*/
+/*    width: auto;*/
+/*    background-color: #0d2241;*/
+
+/*    border-radius: 5px;*/
+/*}*/
+
+#background-container {
+    /*position: absolute;*/
+    top: 0;
+    left: 0;
+    /*width: 100%;*/
+    /*height: 100px;*/
+    background-size: contain;
+    transition: opacity 0.5s ease-in-out;
+    z-index: -1; /* Додайте цей рядок, щоб елементи залишалися клікабельними */
+}
+
+.topPanel {
+    position: absolute;
+    display: none;
+    transform: translateY(-150%);
+    animation: ani 2s forwards;
+    height: 30px;
+    padding: 20px 0 0 200px;
+}
+
+@keyframes ani {
+    0% {
+        transform: translateY(-150%);
+    }
+    100% {
+        transform: translateY(0%);
+    }
+}
+
+
+.arrowPosition {
+    display: flex;
+    width: 150px;
+    /*background-color: rgba(255, 255, 255, 0.8);*/
+    z-index: 1;
+}
+
+
+.settingsMenu {
+    padding: 0 10px 10px 0;
+    color: black;
+    font-size: 20px;
+    font-weight: bold;
+}
+
+.btn {
+    /*border-radius: 50px;*/
+    font-size: 13px;
+    font-weight: bold;
+    letter-spacing: 1px;
+    padding: 6px 11px;
+    text-shadow: 1px 1px 1px rgba(0, 0, 0, 0.14);
+    text-transform: uppercase;
+    box-shadow: 0 6px 10px 0 rgba(0, 0, 0, 0.5);
+}
+
+.btn-warning {
+    /* Permalink - use to edit and share this gradient: http://colorzilla.com/gradient-editor/#e5ae09+0,ffd044+50,ffc107+51,fc9014+71,f1890b+100 */
+    background: #e5ae09;
+    /* Old browsers */
+    background: -moz-linear-gradient(-45deg, #e5ae09 0%, #ffd044 50%, #ffc107 51%, #fc9014 71%, #f1890b 100%);
+    /* FF3.6-15 */
+    background: -webkit-linear-gradient(-45deg, #e5ae09 0%, #ffd044 50%, #ffc107 51%, #fc9014 71%, #f1890b 100%);
+    /* Chrome10-25,Safari5.1-6 */
+    background: linear-gradient(135deg, #e5ae09 0%, #ffd044 50%, #ffc107 51%, #fc9014 71%, #f1890b 100%);
+    /* W3C, IE10+, FF16+, Chrome26+, Opera12+, Safari7+ */
+    filter: progid:DXImageTransform.Microsoft.gradient(startColorstr='#e5ae09', endColorstr='#f1890b', GradientType=1);
+    /* IE6-9 fallback on horizontal gradient */
+    background-size: 400% 400%;
+    -webkit-animation: AnimationName 3s ease infinite;
+    -moz-animation: AnimationName 3s ease infinite;
+    animation: AnimationName 3s ease infinite;
+    -webkit-animation: AnimationName 3s ease infinite;
+    -moz-animation: AnimationName 3s ease infinite;
+    animation: AnimationName 3s ease infinite;
+    border: medium none;
+    color: #fff !important;
+    border-radius: 50px;
+}
+
+.btn-primary {
+    /* Permalink - use to edit and share this gradient: http://colorzilla.com/gradient-editor/#5a7ce2+0,8283e8+50,5c5de8+51,565bd8+71,575cdb+100 */
+    background: #5a7ce2;
+    /* Old browsers */
+    background: -moz-linear-gradient(-45deg, #5a7ce2 0%, #8283e8 50%, #5c5de8 51%, #565bd8 71%, #575cdb 100%);
+    /* FF3.6-15 */
+    background: -webkit-linear-gradient(-45deg, #5a7ce2 0%, #8283e8 50%, #5c5de8 51%, #565bd8 71%, #575cdb 100%);
+    /* Chrome10-25,Safari5.1-6 */
+    background: linear-gradient(135deg, #5a7ce2 0%, #8283e8 50%, #5c5de8 51%, #565bd8 71%, #575cdb 100%);
+    /* W3C, IE10+, FF16+, Chrome26+, Opera12+, Safari7+ */
+    filter: progid:DXImageTransform.Microsoft.gradient(startColorstr='#5a7ce2', endColorstr='#575cdb', GradientType=1);
+    /* IE6-9 fallback on horizontal gradient */
+    background-size: 400% 400%;
+    -webkit-animation: AnimationName 3s ease infinite;
+    -moz-animation: AnimationName 3s ease infinite;
+    animation: AnimationName 3s ease infinite;
+    -webkit-animation: AnimationName 3s ease infinite;
+    -moz-animation: AnimationName 3s ease infinite;
+    animation: AnimationName 3s ease infinite;
+    border: medium none;
+}
+
+.btn-outline-primary:hover {
+    background-color: #5a7ce2;
+    border-color: #5a7ce2;
+    color: #fff;
+}
+
+.btn-success {
+    /* Permalink - use to edit and share this gradient: http://colorzilla.com/gradient-editor/#05ac50+0,21dd72+50,05c44e+51,05ac50+71,05ac50+100 */
+    background: #05ac50;
+    /* Old browsers */
+    background: -moz-linear-gradient(-45deg, #05ac50 0%, #21dd72 50%, #05c44e 51%, #05ac50 71%, #05ac50 100%);
+    /* FF3.6-15 */
+    background: -webkit-linear-gradient(-45deg, #05ac50 0%, #21dd72 50%, #05c44e 51%, #05ac50 71%, #05ac50 100%);
+    /* Chrome10-25,Safari5.1-6 */
+    background: linear-gradient(135deg, #05ac50 0%, #21dd72 50%, #05c44e 51%, #05ac50 71%, #05ac50 100%);
+    /* W3C, IE10+, FF16+, Chrome26+, Opera12+, Safari7+ */
+    filter: progid:DXImageTransform.Microsoft.gradient(startColorstr='#05ac50', endColorstr='#05ac50', GradientType=1);
+    /* IE6-9 fallback on horizontal gradient */
+    background-size: 400% 400%;
+    -webkit-animation: AnimationName 3s ease infinite;
+    -moz-animation: AnimationName 3s ease infinite;
+    animation: AnimationName 3s ease infinite;
+    -webkit-animation: AnimationName 3s ease infinite;
+    -moz-animation: AnimationName 3s ease infinite;
+    animation: AnimationName 3s ease infinite;
+    border: medium none;
+}
+
+.btn-info {
+    /* Permalink - use to edit and share this gradient: http://colorzilla.com/gradient-editor/#01a8c1+0,2adbf7+50,00b5d1+51,0aafc9+71,0599b1+100 */
+    background: #01a8c1;
+    /* Old browsers */
+    background: -moz-linear-gradient(-45deg, #01a8c1 0%, #2adbf7 50%, #00b5d1 51%, #0aafc9 71%, #0599b1 100%);
+    /* FF3.6-15 */
+    background: -webkit-linear-gradient(-45deg, #01a8c1 0%, #2adbf7 50%, #00b5d1 51%, #0aafc9 71%, #0599b1 100%);
+    /* Chrome10-25,Safari5.1-6 */
+    background: linear-gradient(135deg, #01a8c1 0%, #2adbf7 50%, #00b5d1 51%, #0aafc9 71%, #0599b1 100%);
+    /* W3C, IE10+, FF16+, Chrome26+, Opera12+, Safari7+ */
+    filter: progid:DXImageTransform.Microsoft.gradient(startColorstr='#01a8c1', endColorstr='#0599b1', GradientType=1);
+    /* IE6-9 fallback on horizontal gradient */
+    background-size: 400% 400%;
+    -webkit-animation: AnimationName 3s ease infinite;
+    -moz-animation: AnimationName 3s ease infinite;
+    animation: AnimationName 3s ease infinite;
+    -webkit-animation: AnimationName 3s ease infinite;
+    -moz-animation: AnimationName 3s ease infinite;
+    animation: AnimationName 3s ease infinite;
+    border: medium none;
+}
+
+.btn-danger {
+    /* Permalink - use to edit and share this gradient: http://colorzilla.com/gradient-editor/#e81216+0,f45355+50,f6290c+51,ed0e11+71,fc1b21+100 */
+    background: #e81216;
+    /* Old browsers */
+    background: -moz-linear-gradient(-45deg, #e81216 0%, #f45355 50%, #f6290c 51%, #ed0e11 71%, #fc1b21 100%);
+    /* FF3.6-15 */
+    background: -webkit-linear-gradient(-45deg, #e81216 0%, #f45355 50%, #f6290c 51%, #ed0e11 71%, #fc1b21 100%);
+    /* Chrome10-25,Safari5.1-6 */
+    background: linear-gradient(135deg, #e81216 0%, #f45355 50%, #f6290c 51%, #ed0e11 71%, #fc1b21 100%);
+    /* W3C, IE10+, FF16+, Chrome26+, Opera12+, Safari7+ */
+    filter: progid:DXImageTransform.Microsoft.gradient(startColorstr='#e81216', endColorstr='#fc1b21', GradientType=1);
+    /* IE6-9 fallback on horizontal gradient */
+    background-size: 400% 400%;
+    -webkit-animation: AnimationName 3s ease infinite;
+    -moz-animation: AnimationName 3s ease infinite;
+    animation: AnimationName 3s ease infinite;
+    -webkit-animation: AnimationName 3s ease infinite;
+    -moz-animation: AnimationName 3s ease infinite;
+    animation: AnimationName 3s ease infinite;
+    border: medium none;
+    border-radius: 50px;
+}
+
+@-webkit-keyframes AnimationName {
+    0% {
+        background-position: 0 31%
+    }
+    50% {
+        background-position: 100% 70%
+    }
+    100% {
+        background-position: 0 31%
+    }
+}
+
+@-moz-keyframes AnimationName {
+    0% {
+        background-position: 0 31%
+    }
+    50% {
+        background-position: 100% 70%
+    }
+    100% {
+        background-position: 0 31%
+    }
+}
+
+@keyframes AnimationName {
+    0% {
+        background-position: 0% 31%
+    }
+    50% {
+        background-position: 100% 70%
+    }
+    100% {
+        background-position: 0% 31%
+    }
+}
+
+.btn-outline-light:hover {
+    color: #3f345f;
+}
+
+.btn-outline-warning:hover {
+    color: #ffffff;
+}
+
+.btn-sm {
+    font-size: 12px;
+    padding: 11px 25px;
+}
+
+.elements-page-btn .avatarMenu  {
+    margin-top: 20px;
+    width: 122px;
+}
+
+
+
+.hidden {
+    opacity: 0;
+    transition: opacity 1s ease-in-out;
+
+}
+
+.playersImage {
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+    padding: 10px;
+    color: white;
+    width: 100%;
+    height: 50px;
+}
+
+.botAvatar {
+    width: 50px;
+    height: 50px;
+    background-size: cover;
+    border-radius: 40px;
+}
+
+.playerAvatar {
+    width: 50px;
+    height: 50px;
+    background-size: cover;
+    border-radius: 40px;
+}
+
+.botAvatar, .playerAvatar {
+    background: center/cover no-repeat;
+}
+
+.avatarImg {
+    position: relative;
+    display: none;
+    transform: translateX(5%);
+    animation: ani2 2s forwards;
+    /*height: 30px;*/
+    /*padding: 20px 0 0 200px;*/
+    /*border: 5px solid #0c0c42;*/
+    margin-top: 65px;
+}
+
+@keyframes ani2 {
+    0% {
+        transform: translateX(3%);
+    }
+    100% {
+        transform: translateX(10%);
+    }
+}
+
+.pirate_1, .pirate_2,
+.pirate_3, .pirate_4,
+.pirate_5, .pirate_6,
+.pirate_7, .pirate_8,
+.pirate_9, .pirate_10,
+.pirate_11,.pirate_12 {
+    display: flex;
+    width: 60px;
+    height: 60px;
+    /*background-size: cover;*/
+    border-radius: 40px;
+    margin-right: 5px;
+    background: center/cover no-repeat;
+
+}
+
+.dimmed {
+    opacity: 0.5;
+}
+
+.ship-field {
+    display: flex;
+    flex-wrap: wrap;
+    margin-top: 2px;
+}
+
+.ship-field > div {
+
+    margin: 2px;
+}
+
+.ship-cell {
+    width: 30px;
+    height: 30px;
+    border: 1px solid #ffffff;
+    margin: 1px;
+    /*background-color: #075679;*/
+    background: url('../img/sheep_6.png') no-repeat center/contain;
+
+}
+
+.ship-cell.hit {
+    /*background-color: red;*/
+    background: red url('../img/sheep_6.png') no-repeat center/contain;
+
+}
+
+.hitShips   {
+    display: flex;
+    justify-content: space-evenly;
+    align-items: center;
+    font-size: 20px;
+    font-weight: bold;
+    /*color: #6868de;*/
+    /*border: 2px solid #33a8ce;*/
+    border-radius: 5px;
+    margin-top: 20px;
+    background: url('../img/sheep_6.png') no-repeat center/contain;
+
+    width: 100%;
+    max-width: 100%;
+    margin-top: 20px;
+    box-sizing: border-box;
+
+}
+
+.hitShips.hit {
+    background-color: red;
+    /*background: red url('../img/sheep_6.png') no-repeat center/contain;*/
+}
+
+
+.q-container {
+    display: inline-block;
+    padding: 20px 10px 10px 0 ;
+    /*margin: auto;*/
+    /*background-color: rgb(240,240,240);*/
+}
+
+label.capsule {
+    display: block;
+    width: 60px;
+    border: 1px solid rgb(200,200,200);
+    line-height: 30px;
+    border-radius: 25px;
+    background-color: #b02929;
+}
+
+.circle {
+    margin-top: 5px;
+    margin-left: 5px;
+    position: absolute;
+    height: 20px;
+    width: 20px;
+    border-radius: 30px;
+    /*border: 1px solid black;*/
+    background-color: rgb(219, 218, 218);
+    box-shadow: 2px 1px 1px 0px rgb(109, 105, 105);
+}
+
+.text-signs {
+    text-align: center;
+}
+
+.text-signs span {
+    user-select:none;
+    -webkit-user-select:none;
+    color: rgb(231, 229, 220);
+}
+
+
+#hidcheck:checked ~ .capsule .text-signs #on {
+    margin-left: -12px;
+    animation-name:toggle-on;
+    animation-duration:400ms;
+    animation-fill-mode:forwards;
+    animation-timing-function:ease-out;
+}
+
+#hidcheck:checked ~ .capsule .text-signs #on:before {
+    content: "on"
+}
+
+#hidcheck:not(:checked) ~ .capsule .text-signs #on {
+    margin-left: 12px;
+    animation-name:toggle-off;
+    animation-duration:400ms;
+    animation-fill-mode:forwards;
+    animation-timing-function:ease-out;
+}
+
+#hidcheck:not(:checked) ~ .capsule .text-signs #on:after {
+    content: "off"
+}
+
+@-webkit-keyframes toggle-on {
+    0% {margin-left: 0px;}
+    100% {margin-left: -12px;}
+}
+
+@-webkit-keyframes toggle-off {
+    0% {margin-left: 0px;}
+    100% {margin-left: 12px;}
+}
+
+#hidcheck:checked ~ .capsule {
+    background-color: #8BC34A;
+
+}
+
+#hidcheck:checked ~ .capsule .circle {
+    animation-name:toggle;
+    animation-duration:400ms;
+    animation-fill-mode:forwards;
+    animation-timing-function:ease-out;
+}
+
+#hidcheck:not(:checked) ~ .capsule .circle {
+    animation-name:toggle-back;
+    animation-duration:400ms;
+    animation-fill-mode:forwards;
+    animation-timing-function:ease-in-out;
+    animation-direction:reverse;
+}
+
+@-webkit-keyframes toggle-back {
+    0% {
+        margin-left: 2px;
+        box-shadow: 2px 1px 1px 0px rgb(109, 105, 105);
+    }
+
+    10% {
+        width: 22px;
+    }
+
+    20% {
+        width: 23px;
+    }
+
+    30% {
+        width: 24px;
+    }
+
+    40% {
+        width: 25px;
+    }
+
+    45% {
+        width: 27px;
+    }
+
+    50% {
+        width: 29px;
+    }
+
+    55% {
+        width: 27px;
+    }
+
+    60% {
+        width: 23px;
+    }
+
+    70% {
+        width: 22px;
+    }
+
+    80% {
+        width: 21px;
+    }
+
+    90% {
+        width: 20px;
+    }
+
+    100% {
+        margin-left: 38px;
+        width: 20px;
+        height: 20px;
+        box-shadow: -2px 1px 1px 0px rgb(109, 105, 105);
+    }
+}
+
+@-webkit-keyframes toggle {
+    0% {
+        margin-left: 2px;
+        box-shadow: 2px 1px 1px 0px rgb(109, 105, 105);
+    }
+
+    10% {
+        width: 22px;
+    }
+
+    20% {
+        width: 23px;
+    }
+
+    30% {
+        width: 24px;
+    }
+
+    40% {
+        width: 25px;
+    }
+
+    45% {
+        width: 27px;
+    }
+
+    50% {
+        width: 29px;
+    }
+
+    55% {
+        width: 27px;
+    }
+
+    60% {
+        width: 23px;
+    }
+
+    70% {
+        width: 22px;
+    }
+
+    80% {
+        width: 21px;
+    }
+
+    90% {
+        width: 20px;
+    }
+
+    100% {
+        margin-left: 38px;
+        width: 20px;
+        height: 20px;
+        box-shadow: -2px 1px 1px 0px rgb(109, 105, 105);
+    }
+}
+
+#volumeUp, #volumeDown
+ {
+    width: 28px;
+    height: 28px;
+    border-radius: 53px;
+    margin-top: 2px;
+    /*padding-right: 3px;*/
+    /*cursor: pointer;*/
+    /*transition: all .03s ease;*/
+}
+
+/*#volumeDown:active,*/
+/*#volumeUp:active {*/
+/*    transform: scale(0.9);*/
+/*}*/
+
+.main {
+    display: flex;
+    width: 200px;
+    justify-content: space-between;
+}
+.volume-control {
+    width: 100px;
+    margin-top: 5px;
+}
+
+#volumeSlider {
+    width: 75%;
+}
+
+.head_panel {
+    display: flex;
+    justify-content: space-between;
+    height: 140px;
+}
