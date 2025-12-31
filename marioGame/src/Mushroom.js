@@ -1,4 +1,4 @@
-import { Graphics, Container, Sprite, Assets } from 'pixi.js';
+import { Graphics, Container } from 'pixi.js';
 
 export class Mushroom {
     constructor(game, x, y) {
@@ -16,34 +16,52 @@ export class Mushroom {
         this.spawnProgress = 0;
         
         this.sprite = this.createSprite();
-        this.loadTexture();
     }
     
     createSprite() {
         const container = new Container();
         
-        // Placeholder (замінимо на текстуру)
+        // 🍄 Малюємо гриб вручну!
         this.mushroomGraphics = new Graphics();
         
-        // Шапка гриба
-        this.mushroomGraphics.ellipse(14, 8, 14, 10);
-        this.mushroomGraphics.fill(0xff0000);
+        // === ШАПКА ГРИБА (червона) ===
+        this.mushroomGraphics.ellipse(14, 10, 14, 12);
+        this.mushroomGraphics.fill(0xe52521);
         
-        // Білі крапки
-        this.mushroomGraphics.circle(8, 6, 4);
+        // Темніший контур шапки
+        this.mushroomGraphics.ellipse(14, 10, 14, 12);
+        this.mushroomGraphics.stroke({ width: 2, color: 0xb71c1c });
+        
+        // === БІЛІ ПЛЯМИ НА ШАПЦІ ===
+        this.mushroomGraphics.ellipse(7, 6, 5, 4);
         this.mushroomGraphics.fill(0xffffff);
-        this.mushroomGraphics.circle(18, 8, 3);
+        
+        this.mushroomGraphics.ellipse(20, 8, 4, 3);
         this.mushroomGraphics.fill(0xffffff);
         
-        // Ніжка
-        this.mushroomGraphics.roundRect(6, 14, 16, 14, 4);
-        this.mushroomGraphics.fill(0xf5deb3);
+        this.mushroomGraphics.ellipse(12, 14, 3, 2);
+        this.mushroomGraphics.fill(0xffffff);
         
-        // Очі
-        this.mushroomGraphics.circle(10, 20, 2);
+        // === НІЖКА (бежева/біла) ===
+        this.mushroomGraphics.roundRect(6, 18, 16, 10, 3);
+        this.mushroomGraphics.fill(0xfff8e7);
+        
+        // Контур ніжки
+        this.mushroomGraphics.roundRect(6, 18, 16, 10, 3);
+        this.mushroomGraphics.stroke({ width: 1, color: 0xd4a574 });
+        
+        // === ОЧКИ (милі!) ===
+        // Білки очей
+        this.mushroomGraphics.ellipse(10, 22, 3, 3);
         this.mushroomGraphics.fill(0x000000);
-        this.mushroomGraphics.circle(18, 20, 2);
+        this.mushroomGraphics.ellipse(18, 22, 3, 3);
         this.mushroomGraphics.fill(0x000000);
+        
+        // Блиск в очах
+        this.mushroomGraphics.circle(9, 21, 1);
+        this.mushroomGraphics.fill(0xffffff);
+        this.mushroomGraphics.circle(17, 21, 1);
+        this.mushroomGraphics.fill(0xffffff);
         
         container.addChild(this.mushroomGraphics);
         
@@ -53,24 +71,9 @@ export class Mushroom {
         // Ховаємо на початку для анімації появи
         container.y = this.y + this.height;
         
+        console.log('🍄 Mushroom created with Graphics!');
+        
         return container;
-    }
-    
-    async loadTexture() {
-        try {
-            const texture = await Assets.load('img/mashroom.png');
-            
-            this.mushroomSprite = new Sprite(texture);
-            this.mushroomSprite.width = this.width;
-            this.mushroomSprite.height = this.height;
-            
-            this.sprite.removeChild(this.mushroomGraphics);
-            this.sprite.addChild(this.mushroomSprite);
-            
-            console.log('🍄 Mushroom texture loaded!');
-        } catch (error) {
-            console.log('Using fallback mushroom graphics');
-        }
     }
     
     update(delta) {

@@ -1,4 +1,4 @@
-import { Graphics, Container, Sprite, Assets } from 'pixi.js';
+import { Graphics, Container } from 'pixi.js';
 
 export class Player {
     constructor(game) {
@@ -23,43 +23,95 @@ export class Player {
         this.blinkTimer = 0;
         
         this.sprite = this.createSprite();
-        this.loadTexture();
     }
     
     createSprite() {
         const container = new Container();
         
-        // Спочатку створюємо placeholder (потім замінимо на текстуру)
+        // 🍄 Малюємо Маріо вручну!
         this.marioGraphics = new Graphics();
-        this.marioGraphics.roundRect(0, 0, this.width, this.height, 8);
+        
+        // === ШАПКА (червона) ===
+        this.marioGraphics.roundRect(4, 0, 32, 12, 6);
         this.marioGraphics.fill(0xe52521);
+        
+        // Козирок шапки
+        this.marioGraphics.ellipse(30, 10, 12, 5);
+        this.marioGraphics.fill(0xe52521);
+        
+        // === ВОЛОССЯ (коричневе) ===
+        this.marioGraphics.rect(2, 10, 10, 8);
+        this.marioGraphics.fill(0x6b3e08);
+        
+        // === ОБЛИЧЧЯ (бежеве) ===
+        this.marioGraphics.roundRect(10, 8, 22, 18, 4);
+        this.marioGraphics.fill(0xffcc99);
+        
+        // === ВУХА ===
+        this.marioGraphics.circle(10, 16, 4);
+        this.marioGraphics.fill(0xffcc99);
+        
+        // === ОЧІ ===
+        // Біла частина
+        this.marioGraphics.ellipse(18, 14, 4, 5);
+        this.marioGraphics.fill(0xffffff);
+        this.marioGraphics.ellipse(26, 14, 4, 5);
+        this.marioGraphics.fill(0xffffff);
+        
+        // Зіниці
+        this.marioGraphics.circle(19, 15, 2);
+        this.marioGraphics.fill(0x000000);
+        this.marioGraphics.circle(27, 15, 2);
+        this.marioGraphics.fill(0x000000);
+        
+        // === НІС ===
+        this.marioGraphics.ellipse(32, 18, 6, 4);
+        this.marioGraphics.fill(0xffcc99);
+        
+        // === ВУСА (коричневі) ===
+        this.marioGraphics.ellipse(24, 22, 14, 4);
+        this.marioGraphics.fill(0x6b3e08);
+        
+        // === ТІЛО (червона сорочка) ===
+        this.marioGraphics.roundRect(6, 26, 28, 14, 4);
+        this.marioGraphics.fill(0xe52521);
+        
+        // === КОМБІНЕЗОН (синій) ===
+        this.marioGraphics.roundRect(4, 36, 32, 10, 3);
+        this.marioGraphics.fill(0x1e3a8a);
+        
+        // Лямки комбінезона
+        this.marioGraphics.rect(10, 28, 4, 10);
+        this.marioGraphics.fill(0x1e3a8a);
+        this.marioGraphics.rect(26, 28, 4, 10);
+        this.marioGraphics.fill(0x1e3a8a);
+        
+        // Золоті ґудзики
+        this.marioGraphics.circle(12, 32, 2);
+        this.marioGraphics.fill(0xffd700);
+        this.marioGraphics.circle(28, 32, 2);
+        this.marioGraphics.fill(0xffd700);
+        
+        // === РУКИ (бежеві) ===
+        this.marioGraphics.ellipse(2, 32, 5, 4);
+        this.marioGraphics.fill(0xffcc99);
+        this.marioGraphics.ellipse(38, 32, 5, 4);
+        this.marioGraphics.fill(0xffcc99);
+        
+        // === ЧЕРЕВИКИ (коричневі) ===
+        this.marioGraphics.roundRect(4, 44, 12, 6, 2);
+        this.marioGraphics.fill(0x6b3e08);
+        this.marioGraphics.roundRect(24, 44, 12, 6, 2);
+        this.marioGraphics.fill(0x6b3e08);
+        
         container.addChild(this.marioGraphics);
         
         container.x = this.x;
         container.y = this.y;
         
+        console.log('🍄 Mario created with Graphics!');
+        
         return container;
-    }
-    
-    async loadTexture() {
-        try {
-            // Завантажуємо текстуру Mario
-            const texture = await Assets.load('img/mario.png');
-            
-            // Створюємо спрайт
-            this.marioSprite = new Sprite(texture);
-            this.marioSprite.width = this.width;
-            this.marioSprite.height = this.height;
-            
-            // Видаляємо placeholder і додаємо спрайт
-            this.sprite.removeChild(this.marioGraphics);
-            this.sprite.addChild(this.marioSprite);
-            
-            console.log('🍄 Mario texture loaded!');
-        } catch (error) {
-            console.log('Using fallback Mario graphics');
-            // Залишаємо Graphics якщо текстура не завантажилась
-        }
     }
     
     update(delta) {

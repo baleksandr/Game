@@ -1,6 +1,6 @@
 /**
  * SoundManager - Система звуків на Web Audio API
- * Генерує синтетичні космічні звуки без файлів!
+ * Підтримує MP3 фонову музику та синтетичні звукові ефекти!
  */
 
 export class SoundManager {
@@ -9,11 +9,13 @@ export class SoundManager {
         this.masterVolume = null;
         this.enabled = true;
         this.volume = 0.3;
-        this.musicVolume = 0.12;
+        this.musicVolume = 0.25;
         
-        // Фонова музика
-        this.bgMusicNodes = [];
+        // Фонова музика (MP3)
+        this.bgMusic = null;
+        this.bgMusicSource = null;
         this.isMusicPlaying = false;
+        this.musicLoaded = false;
         
         this.init();
     }
@@ -32,10 +34,29 @@ export class SoundManager {
             this.musicGain.gain.value = this.musicVolume;
             this.musicGain.connect(this.audioContext.destination);
             
+            // Завантажуємо MP3 музику
+            this.loadBackgroundMusic();
+            
             console.log('🔊 Sound system initialized!');
         } catch (error) {
             console.log('⚠️ Web Audio API not available');
             this.enabled = false;
+        }
+    }
+    
+    /**
+     * Завантаження MP3 файлу фонової музики
+     */
+    async loadBackgroundMusic() {
+        try {
+            const response = await fetch('sounds/melodiya_kosmosa meloboom.mp3');
+            const arrayBuffer = await response.arrayBuffer();
+            this.bgMusic = await this.audioContext.decodeAudioData(arrayBuffer);
+            this.musicLoaded = true;
+            console.log('🎵 Background music loaded!');
+        } catch (error) {
+            console.log('⚠️ Could not load background music:', error);
+            this.musicLoaded = false;
         }
     }
     
@@ -334,233 +355,55 @@ export class SoundManager {
         osc2.stop(this.audioContext.currentTime + 0.3);
     }
     
-    // ==================== ФОНОВА КОСМІЧНА МУЗИКА ====================
+    // ==================== ФОНОВА КОСМІЧНА МУЗИКА (MP3) ====================
     
     /**
-     * Запуск космічної музики (без гудіння!)
+     * Запуск космічної музики з MP3 файлу
      */
     startBackgroundMusic() {
         if (!this.enabled || !this.audioContext || this.isMusicPlaying) return;
         
-        this.isMusicPlaying = true;
-        console.log('🎵 Starting space music...');
+        if (!this.musicLoaded || !this.bgMusic) {
+            console.log('⚠️ Music not loaded yet, retrying...');
+            setTimeout(() => this.startBackgroundMusic(), 500);
+            return;
+        }
         
-        // Тільки мелодійні елементи - без постійних дронів!
-        this.startMelody();
-        this.startBassLine();
-        this.startPads();
+        try {
+            // Створюємо новий source для відтворення
+            this.bgMusicSource = this.audioContext.createBufferSource();
+            this.bgMusicSource.buffer = this.bgMusic;
+            this.bgMusicSource.loop = true; // Зациклюємо музику
+            
+            // Підключаємо до каналу музики
+            this.bgMusicSource.connect(this.musicGain);
+            
+            // Запускаємо!
+            this.bgMusicSource.start(0);
+            this.isMusicPlaying = true;
+            
+            console.log('🎵 Playing cosmic background music!');
+        } catch (error) {
+            console.log('⚠️ Error playing music:', error);
+        }
     }
     
     /**
      * Зупинка музики
      */
     stopBackgroundMusic() {
-        this.isMusicPlaying = false;
-        
-        // Очищаємо всі інтервали
-        if (this.melodyInterval) clearInterval(this.melodyInterval);
-        if (this.bassInterval) clearInterval(this.bassInterval);
-        if (this.padInterval) clearInterval(this.padInterval);
-        if (this.cosmicInterval) clearInterval(this.cosmicInterval);
-        
-        this.bgMusicNodes = [];
-        console.log('🎵 Music stopped');
-    }
-    
-    /**
-     * Основна мелодія - космічна тема
-     */
-    startMelody() {
-        // Космічна мелодія в A minor
-        const melody = [
-            { note: 440, duration: 0.4 },   // A4
-            { note: 523, duration: 0.4 },   // C5
-            { note: 659, duration: 0.6 },   // E5
-            { note: 587, duration: 0.3 },   // D5
-            { note: 523, duration: 0.5 },   // C5
-            { note: 440, duration: 0.8 },   // A4
-            { note: 0, duration: 0.5 },     // пауза
-            { note: 392, duration: 0.4 },   // G4
-            { note: 440, duration: 0.4 },   // A4
-            { note: 523, duration: 0.6 },   // C5
-            { note: 440, duration: 0.8 },   // A4
-            { note: 0, duration: 1.0 },     // пауза
-        ];
-        
-        let noteIndex = 0;
-        
-        const playNextNote = () => {
-            if (!this.isMusicPlaying || !this.enabled) return;
-            
-            const { note, duration } = melody[noteIndex];
-            
-            if (note > 0) {
-                this.playMelodyNote(note, duration);
+        if (this.bgMusicSource) {
+            try {
+                this.bgMusicSource.stop();
+                this.bgMusicSource.disconnect();
+            } catch (e) {
+                // Ігноруємо помилки при зупинці
             }
-            
-            noteIndex = (noteIndex + 1) % melody.length;
-            
-            // Наступна нота
-            this.melodyInterval = setTimeout(playNextNote, duration * 1000 + 100);
-        };
+            this.bgMusicSource = null;
+        }
         
-        playNextNote();
-    }
-    
-    /**
-     * Грає одну ноту мелодії
-     */
-    playMelodyNote(frequency, duration) {
-        if (!this.audioContext) return;
-        
-        const osc = this.audioContext.createOscillator();
-        const gain = this.audioContext.createGain();
-        const filter = this.audioContext.createBiquadFilter();
-        
-        // М'який синтезаторний звук
-        osc.type = 'sine';
-        osc.frequency.value = frequency;
-        
-        // Легке вібрато
-        const vibrato = this.audioContext.createOscillator();
-        const vibratoGain = this.audioContext.createGain();
-        vibrato.frequency.value = 5;
-        vibratoGain.gain.value = 3;
-        vibrato.connect(vibratoGain);
-        vibratoGain.connect(osc.frequency);
-        
-        filter.type = 'lowpass';
-        filter.frequency.value = 2000;
-        
-        const now = this.audioContext.currentTime;
-        gain.gain.setValueAtTime(0, now);
-        gain.gain.linearRampToValueAtTime(0.08, now + 0.05);
-        gain.gain.linearRampToValueAtTime(0.05, now + duration * 0.3);
-        gain.gain.exponentialRampToValueAtTime(0.001, now + duration + 0.3);
-        
-        osc.connect(filter);
-        filter.connect(gain);
-        gain.connect(this.musicGain);
-        
-        osc.start(now);
-        vibrato.start(now);
-        osc.stop(now + duration + 0.4);
-        vibrato.stop(now + duration + 0.4);
-    }
-    
-    /**
-     * Бас-лінія
-     */
-    startBassLine() {
-        const bassNotes = [
-            { note: 110, duration: 1.5 },  // A2
-            { note: 110, duration: 1.5 },  // A2
-            { note: 130.8, duration: 1.5 },// C3
-            { note: 146.8, duration: 1.5 },// D3
-            { note: 110, duration: 1.5 },  // A2
-            { note: 98, duration: 1.5 },   // G2
-            { note: 110, duration: 2.0 },  // A2
-        ];
-        
-        let noteIndex = 0;
-        
-        const playBass = () => {
-            if (!this.isMusicPlaying || !this.enabled) return;
-            
-            const { note, duration } = bassNotes[noteIndex];
-            this.playBassNote(note, duration);
-            
-            noteIndex = (noteIndex + 1) % bassNotes.length;
-            this.bassInterval = setTimeout(playBass, duration * 1000);
-        };
-        
-        // Починаємо бас з затримкою
-        setTimeout(playBass, 500);
-    }
-    
-    /**
-     * Грає басову ноту
-     */
-    playBassNote(frequency, duration) {
-        if (!this.audioContext) return;
-        
-        const osc = this.audioContext.createOscillator();
-        const gain = this.audioContext.createGain();
-        
-        osc.type = 'triangle';
-        osc.frequency.value = frequency;
-        
-        const now = this.audioContext.currentTime;
-        gain.gain.setValueAtTime(0, now);
-        gain.gain.linearRampToValueAtTime(0.1, now + 0.1);
-        gain.gain.linearRampToValueAtTime(0.06, now + 0.3);
-        gain.gain.exponentialRampToValueAtTime(0.001, now + duration);
-        
-        osc.connect(gain);
-        gain.connect(this.musicGain);
-        
-        osc.start(now);
-        osc.stop(now + duration);
-    }
-    
-    /**
-     * Пади (акорди на фоні)
-     */
-    startPads() {
-        const chords = [
-            [220, 261.6, 329.6],  // Am
-            [196, 246.9, 293.7],  // G
-            [174.6, 220, 261.6],  // F
-            [164.8, 207.7, 261.6],// Em
-        ];
-        
-        let chordIndex = 0;
-        
-        const playPad = () => {
-            if (!this.isMusicPlaying || !this.enabled) return;
-            
-            this.playChord(chords[chordIndex], 4);
-            
-            chordIndex = (chordIndex + 1) % chords.length;
-            this.padInterval = setTimeout(playPad, 4500);
-        };
-        
-        // Починаємо пади з затримкою
-        setTimeout(playPad, 1000);
-    }
-    
-    /**
-     * Грає акорд
-     */
-    playChord(notes, duration) {
-        if (!this.audioContext) return;
-        
-        notes.forEach((freq, i) => {
-            const osc = this.audioContext.createOscillator();
-            const gain = this.audioContext.createGain();
-            const filter = this.audioContext.createBiquadFilter();
-            
-            osc.type = 'sine';
-            osc.frequency.value = freq;
-            
-            filter.type = 'lowpass';
-            filter.frequency.value = 800;
-            
-            const now = this.audioContext.currentTime;
-            const delay = i * 0.05; // Легке арпеджіо
-            
-            gain.gain.setValueAtTime(0, now + delay);
-            gain.gain.linearRampToValueAtTime(0.025, now + delay + 0.5);
-            gain.gain.linearRampToValueAtTime(0.02, now + delay + duration - 1);
-            gain.gain.exponentialRampToValueAtTime(0.001, now + delay + duration);
-            
-            osc.connect(filter);
-            filter.connect(gain);
-            gain.connect(this.musicGain);
-            
-            osc.start(now + delay);
-            osc.stop(now + delay + duration);
-        });
+        this.isMusicPlaying = false;
+        console.log('🎵 Music stopped');
     }
     
     /**
@@ -585,4 +428,6 @@ export class SoundManager {
         }
     }
 }
+
+
 
