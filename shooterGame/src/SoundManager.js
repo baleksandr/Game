@@ -15,7 +15,11 @@ export class SoundManager {
         this.bgMusic = null;
         this.bgMusicSource = null;
         this.isMusicPlaying = false;
+        this.musicPending = false; // Музика очікує завантаження
         this.musicLoaded = false;
+        this.musicLoadFailed = false; // Прапорець провалу завантаження
+        this.musicRetryCount = 0; // Лічильник спроб
+        this.maxMusicRetries = 10; // Максимум 10 спроб (5 секунд)
         
         this.init();
     }
@@ -53,10 +57,12 @@ export class SoundManager {
             const arrayBuffer = await response.arrayBuffer();
             this.bgMusic = await this.audioContext.decodeAudioData(arrayBuffer);
             this.musicLoaded = true;
+            this.musicLoadFailed = false;
             console.log('🎵 Background music loaded!');
         } catch (error) {
             console.log('⚠️ Could not load background music:', error);
             this.musicLoaded = false;
+            this.musicLoadFailed = true; // Позначаємо що завантаження провалилось
         }
     }
     
@@ -364,10 +370,32 @@ export class SoundManager {
         if (!this.enabled || !this.audioContext || this.isMusicPlaying) return;
         
         if (!this.musicLoaded || !this.bgMusic) {
-            console.log('⚠️ Music not loaded yet, retrying...');
+            // Якщо завантаження вже провалилось - не повторюємо
+            if (this.musicLoadFailed) {
+                console.log('⚠️ Music failed to load, not retrying');
+                this.musicPending = false;
+                return;
+            }
+            
+            // Перевіряємо ліміт спроб
+            if (this.musicRetryCount >= this.maxMusicRetries) {
+                console.log('⚠️ Max music retry attempts reached, giving up');
+                this.musicLoadFailed = true;
+                this.musicPending = false;
+                return;
+            }
+            
+            // Позначаємо що музика очікує завантаження
+            this.musicPending = true;
+            this.musicRetryCount++;
+            console.log(`⚠️ Music not loaded yet, retrying... (${this.musicRetryCount}/${this.maxMusicRetries})`);
             setTimeout(() => this.startBackgroundMusic(), 500);
             return;
         }
+        
+        // Скидаємо лічильники при успішному запуску
+        this.musicRetryCount = 0;
+        this.musicPending = false;
         
         try {
             // Створюємо новий source для відтворення
@@ -385,6 +413,7 @@ export class SoundManager {
             console.log('🎵 Playing cosmic background music!');
         } catch (error) {
             console.log('⚠️ Error playing music:', error);
+            this.musicPending = false;
         }
     }
     
@@ -403,6 +432,8 @@ export class SoundManager {
         }
         
         this.isMusicPlaying = false;
+        this.musicPending = false; // Скасовуємо очікування
+        this.musicRetryCount = 0; // Скидаємо лічильник спроб
         console.log('🎵 Music stopped');
     }
     
@@ -410,12 +441,14 @@ export class SoundManager {
      * Переключення музики
      */
     toggleMusic() {
-        if (this.isMusicPlaying) {
+        // Якщо грає або очікує - зупиняємо
+        if (this.isMusicPlaying || this.musicPending) {
             this.stopBackgroundMusic();
         } else {
             this.startBackgroundMusic();
         }
-        return this.isMusicPlaying;
+        // Повертаємо true якщо грає АБО очікує завантаження
+        return this.isMusicPlaying || this.musicPending;
     }
     
     /**

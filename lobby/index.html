@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" href="img/gameConsole_2.png" type="image/x-icon">
+    <title>🎮 Game Lobby</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Rajdhani:wght@400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles/lobby.css">
+    <link rel="stylesheet" href="styles/planets.css">
+    <link rel="stylesheet" href="styles/robot-guide.css">
+</head>
+<body>
+    <div class="background"></div>
+    <div class="stars" id="stars"></div>
+
+    <header>
+        <h1>GAME LOBBY</h1>
+        <p class="subtitle">Choose your game</p>
+        <button id="sound-btn"> </button>
+    </header>
+
+    <main class="games-grid">
+        <!-- Space Shooter -->
+        <div class="game-card shooter" onclick="launchGame('shooterGame')">
+            <div class="card-icon">🚀</div>
+            <div class="card-content">
+                <h2 class="card-title">Space Shooter</h2>
+                <p class="card-description">
+                    Space shooter with enemy waves, upgrades and epic explosions!
+                </p>
+                <div class="card-tech">
+                    <span class="tech-tag">PixiJS</span>
+                    <span class="tech-tag">Vite</span>
+                    <span class="tech-tag">Web Audio</span>
+                </div>
+            </div>
+            <div class="play-btn">▶</div>
+        </div>
+
+        <!-- Mario Game -->
+        <div class="game-card mario" onclick="launchGame('marioGame')">
+            <div class="card-icon">🍄</div>
+            <div class="card-content">
+                <h2 class="card-title">Mario Platformer</h2>
+                <p class="card-description">
+                    Classic platformer! Collect coins, jump on platforms.
+                </p>
+                <div class="card-tech">
+                    <span class="tech-tag">PixiJS</span>
+                    <span class="tech-tag">Vite</span>
+                    <span class="tech-tag">Physics</span>
+                </div>
+            </div>
+            <div class="play-btn">▶</div>
+        </div>
+
+        <!-- Tetris -->
+        <div class="game-card tetris" onclick="launchGame('Tetris')">
+            <div class="card-icon">🧱</div>
+            <div class="card-content">
+                <h2 class="card-title">Tetris</h2>
+                <p class="card-description">
+                    Legendary Tetris! Stack blocks, clear lines, beat high scores.
+                </p>
+                <div class="card-tech">
+                    <span class="tech-tag">JavaScript</span>
+                    <span class="tech-tag">Canvas</span>
+                    <span class="tech-tag">Audio</span>
+                </div>
+            </div>
+            <div class="play-btn">▶</div>
+        </div>
+
+        <!-- Snake -->
+        <div class="game-card snake" onclick="launchGame('Snake')">
+            <div class="card-icon">🐍</div>
+            <div class="card-content">
+                <h2 class="card-title">Snake</h2>
+                <p class="card-description">
+                    Classic Snake! Eat apples, grow longer, don't hit yourself.
+                </p>
+                <div class="card-tech">
+                    <span class="tech-tag">JavaScript</span>
+                    <span class="tech-tag">Canvas</span>
+                    <span class="tech-tag">Themes</span>
+                </div>
+            </div>
+            <div class="play-btn">▶</div>
+        </div>
+
+        <!-- Battle Ships -->
+        <div class="game-card battleship" onclick="launchGame('battleShips')">
+            <div class="card-icon">⚓</div>
+            <div class="card-content">
+                <h2 class="card-title">Battle Ships</h2>
+                <p class="card-description">
+                    Naval battle! Place your ships, sink the enemy fleet.
+                </p>
+                <div class="card-tech">
+                    <span class="tech-tag">JavaScript</span>
+                    <span class="tech-tag">DOM</span>
+                    <span class="tech-tag">AI Bot</span>
+                </div>
+            </div>
+            <div class="play-btn">▶</div>
+        </div>
+    </main>
+
+    <footer>
+        <p>Made with ❤️ | <a href="https://pixijs.com" target="_blank">PixiJS</a></p>
+    </footer>
+
+    <script src="scripts/constellations.js"></script>
+    <script src="scripts/planets.js"></script>
+    <script src="scripts/robot-guide.js"></script>
+    <script src="scripts/lobby.js"></script>
+</body>
+</html>
+

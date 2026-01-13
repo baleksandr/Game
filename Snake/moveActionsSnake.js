@@ -1,14 +1,9 @@
 let currentDirection = 'ArrowRight'; // Початковий напрямок
 let moveInterval;
-
-// Функція для автоматичного руху змії
-// function startSnakeMovement() {
-//     // if (!isPausedGame) {
-//         moveInterval = setInterval(() => {
-//             moveSnake(currentDirection); // Move the snake in the current direction
-//         }, 500); // Movement interval (200 ms)
-//     // }
-// }
+const BASE_SPEED = 500; // Початкова швидкість
+const MIN_SPEED = 100;  // Мінімальний інтервал (максимальна швидкість)
+let currentSpeed = BASE_SPEED;
+let foodEatenCount = 0; // Лічильник з'їденої їжі
 
 function startSnakeMovement() {
     const head = snake[0];
@@ -24,7 +19,7 @@ function startSnakeMovement() {
 
     moveInterval = setInterval(() => {
         moveSnake(currentDirection); // Move the snake in the current direction
-    }, 500); // Movement interval (200 ms)
+    }, currentSpeed); // Динамічна швидкість
 }
 
 // Оновлення напрямку за допомогою клавіш
@@ -50,18 +45,9 @@ function moveActionsSnake(e) {
     }
 }
 
-
-
-// Запуск гри
-document.addEventListener('keydown', (e) => {
-    moveActionsSnake(e.key);
-});
-
 // Зупинка гри
 function stopGame() {
-
     clearInterval(moveInterval); // Зупиняємо автоматичний рух
-    document.removeEventListener('keydown', onKeyDownPress); // Видаляємо слухач
 }
 
 // // Виклик функції для старту гри
@@ -80,37 +66,6 @@ function scapePause(){
     }
 }
 
-
-
-// function moveActionsSnake(e) {
-//     // if (e === 'Escape') {
-//     //     togglePauseGame();
-//     // }
-//
-//     if (!isPausedGame) {
-//         switch (e) {
-//             // case ' ':
-//             case 'ArrowUp':
-//                 // moveSnakeUp();
-//                 moveSnake("ArrowUp")
-//                 break;
-//             case 'ArrowDown':
-//                 // moveSnakeDown();
-//                 moveSnake("ArrowDown")
-//                 break;
-//             case 'ArrowLeft':
-//                 // moveSnakeLeft();
-//                 moveSnake("ArrowLeft")
-//                 break;
-//             case 'ArrowRight':
-//                 // moveSnakeRight();
-//                 moveSnake("ArrowRight")
-//                 break;
-//         }
-//         // draw();
-//     }
-// }
-
 document.addEventListener('keydown', onKeyDownPress)
 
 
@@ -119,42 +74,9 @@ function onKeyDownPress(e) {
     moveActionsSnake(e.key);
 }
 
-// function moveSnakeUp() {
-//     // Отримуємо поточну позицію голови
-//     const head = snake[0];
-//     const newHead = { row: head.row - 1, column: head.column };
-//     console.log(snake);
-//     console.log(newHead);
-//
-//     // Перевірка на вихід за межі поля
-//     if (newHead.row < 0 || snakePlayField[newHead.row][newHead.column] === 1) {
-//         console.log("Гра закінчена");
-//         return;
-//     }
-//
-//     snakeUpdate(newHead);
-// }
-//
-// function moveSnakeDown() {
-//     // Отримуємо поточну позицію голови
-//     const head = snake[0];
-//     const newHead = { row: head.row + 1, column: head.column };
-//
-//     // Перевірка на вихід за межі поля
-//     if (newHead.row >= PLAYFIELD_ROWS || snakePlayField[newHead.row][newHead.column] === 1) {
-//         console.log("Гра закінчена");
-//         return;
-//     }
-//     snakeUpdate(newHead);
-// }
-
 function moveSnake(direction) {
     // Отримуємо поточну позицію голови
     const head = snake[0];
-    // head.className = 'head';
-    // console.log("head", head);
-    // console.log("snake",document.querySelectorAll('.grid div')[convertPositionToIndexOnABord(head.row, head.column)] ) ;
-
 
     const rowOffset = direction === 'ArrowDown' ? 1 : direction === 'ArrowUp' ? -1 : 0;
     const columnOffset = direction === 'ArrowRight' ? 1 : direction === 'ArrowLeft' ? -1 : 0;
@@ -164,26 +86,6 @@ function moveSnake(direction) {
         row: head.row + rowOffset,
         column: head.column + columnOffset
     };
-
-    // snake.forEach((newHead, index) => {
-    //     const snakeIndex = convertPositionToIndexOnABord(newHead.row, newHead.column);
-    //     const cell = document.querySelectorAll('.grid div')[snakeIndex];
-    //     console.log(cell);
-    //
-    //     if (cell.className == "snake" && snake.length > 1) {
-    //         cell.classList.add('snake-tail'); // Add the tail class to the last segment
-    //     } else {
-    //         cell.classList.add('snake'); // Add the snake class to other segments
-    //     }
-    // });
-
-
-    // snake.forEach(segment => {
-    //     const snakeIndex = convertPositionToIndexOnABord(segment.row, segment.column);
-    //     document.querySelectorAll('.grid div')[snakeIndex].classList.add('snake');
-    // });
-    // console.log( "snake", snake);
-    // console.log( "newHead", newHead);
 
     // Перевірка на вихід за межі поля
     if (
@@ -212,20 +114,6 @@ function moveSnake(direction) {
 
 }
 
-// function snakeUpdate(newHead) {
-//     // Додаємо нову голову
-//     snake.unshift(newHead);
-//
-//     // Видаляємо хвіст, якщо їжа не була з'їдена
-//     const tail = snake.pop();
-//     snakePlayField[tail.row][tail.column] = 0;
-//
-//     // Оновлюємо поле
-//     snakePlayField[newHead.row][newHead.column] = 1;
-//
-//     // Перемальовуємо поле
-//     generateSnakePlayField();
-// }
 function snakeUpdate(newHead) {
     // Add the new head
     snake.unshift(newHead);
@@ -239,6 +127,22 @@ function snakeUpdate(newHead) {
         console.log("Food eaten!");
 
         playSnake("eat", 1);
+        
+        // Збільшуємо лічильник з'їденої їжі
+        foodEatenCount++;
+        
+        // Перевіряємо чи потрібно збільшити швидкість (кожні 7 з'їдених яблук)
+        if (foodEatenCount > 0 && foodEatenCount % 7 === 0 && currentSpeed > MIN_SPEED) {
+            currentSpeed -= 50; // Збільшуємо швидкість на 50мс
+            console.log(`Рівень ${foodEatenCount / 7}! Нова швидкість: ${currentSpeed}мс`);
+            
+            // Перезапускаємо інтервал з новою швидкістю
+            clearInterval(moveInterval);
+            moveInterval = setInterval(() => {
+                moveSnake(currentDirection);
+            }, currentSpeed);
+        }
+        
         // Generate new food position
         do {
             food = {row: randomPosition(), column: randomPosition()};
@@ -248,13 +152,6 @@ function snakeUpdate(newHead) {
         const tail = snake.pop();
         snakePlayField[tail.row][tail.column] = 0;
     }
-// If the snake collides with itself, the game is over
-//     if (snake.some((segment, index) => index !== 0 && segment.row === newHead.row && segment.column === newHead.column)) {
-//         console.log("Game over: Snake collided with itself");
-//         return;
-//     }
-
-
     // Update the playfield
     snakePlayField[newHead.row][newHead.column] = 1;
 
@@ -277,11 +174,13 @@ function snakeCollidesWithItself(newHead) {
 }
 
 restartSnake.addEventListener("click", () => {
-    // stopLoop();
-    // isPausedGame = false;
+    // Скидаємо швидкість та лічильники на початкові
+    currentSpeed = BASE_SPEED;
+    currentDirection = 'ArrowRight';
+    foodEatenCount = 0; // Скидаємо лічильник з'їденої їжі
+    
     pauseGame.style.display = 'flex';
-    gameOverSnake.style.display= 'none';
+    gameOverSnake.style.display = 'none';
     placeSnakeAndFood();
-    stopGame()
-    // soundId = setTimeout(() => genericClick("generic_click", 0.25), 100);
+    stopGame();
 })

@@ -692,7 +692,7 @@ export class Game {
         musicBtn.addEventListener('click', () => {
             this.sound.unlock();
             const playing = this.sound.toggleMusic();
-            musicBtn.innerHTML = playing ? '🎵' : '🎵';
+            musicBtn.innerHTML = playing ? '🎵' : '🔇';
             musicBtn.classList.toggle('off', !playing);
         });
         
