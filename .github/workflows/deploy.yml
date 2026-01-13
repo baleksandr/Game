@@ -24,10 +24,22 @@ jobs:
       - name: Setup Pages
         uses: actions/configure-pages@v5
 
+      - name: Prepare deployment (exclude heavy files)
+        run: |
+          mkdir -p deploy
+          # Copy everything except node_modules and .git
+          rsync -av --progress . deploy/ \
+            --exclude 'node_modules' \
+            --exclude '.git' \
+            --exclude 'deploy' \
+            --exclude '*.log'
+          echo "📦 Deploy folder size:"
+          du -sh deploy/
+          
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          path: '.'
+          path: 'deploy'
 
   deploy:
     environment:
