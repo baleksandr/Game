@@ -7,7 +7,7 @@
 #robot-guide {
     position: fixed;
     z-index: 1000;
-    cursor: none;
+    cursor: pointer;
     transition: left 2s cubic-bezier(0.25, 0.46, 0.45, 0.94), 
                 top 2s cubic-bezier(0.25, 0.46, 0.45, 0.94);
     filter: drop-shadow(0 0 20px rgba(0, 212, 255, 0.5))

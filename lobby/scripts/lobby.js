@@ -4,6 +4,7 @@ const bgMusic = document.createElement('audio');
 const UNMUTE_IMAGE = "..img/soundOn.png";
 const MUTE_IMAGE = "..img/soundOff.png";
 const TOTAL_TRACKS = 8;  // Кількість треків в lobbySounds/
+let currentTrack = 1;    // Поточний трек
 
 // Створення зірок
 function createStars() {
@@ -235,9 +236,16 @@ function createVolumeSlider() {
     container.className = 'volume-container';
     container.id = 'volume-container';
     container.innerHTML = `
-        <span class="volume-icon">🔊</span>
-        <input type="range" class="volume-slider" id="volume-slider" min="0" max="100" value="10">
-        <span class="volume-value" id="volume-value">10%</span>
+        <div class="volume-row">
+            <span class="volume-icon">🔊</span>
+            <input type="range" class="volume-slider" id="volume-slider" min="0" max="100" value="10">
+            <span class="volume-value" id="volume-value">10%</span>
+        </div>
+        <div class="track-controls">
+            <button class="track-btn" id="prev-track" title="Previous track">◀</button>
+            <span class="track-info" id="track-info">Track 1/${TOTAL_TRACKS}</span>
+            <button class="track-btn" id="next-track" title="Next track">▶</button>
+        </div>
     `;
     document.body.appendChild(container);
     
@@ -263,6 +271,17 @@ function createVolumeSlider() {
         }
     });
     
+    // Кнопки перемикання треків
+    document.getElementById('prev-track').addEventListener('click', (e) => {
+        e.stopPropagation();
+        playPreviousTrack();
+    });
+    
+    document.getElementById('next-track').addEventListener('click', (e) => {
+        e.stopPropagation();
+        playNextTrack();
+    });
+    
     // Закриваємо при кліку поза слайдером
     document.addEventListener('click', (e) => {
         if (volumeSliderVisible && 
@@ -273,6 +292,44 @@ function createVolumeSlider() {
     });
     
     return container;
+}
+
+// Перемикання треків
+function playNextTrack() {
+    currentTrack = currentTrack >= TOTAL_TRACKS ? 1 : currentTrack + 1;
+    playTrack(currentTrack);
+}
+
+function playPreviousTrack() {
+    currentTrack = currentTrack <= 1 ? TOTAL_TRACKS : currentTrack - 1;
+    playTrack(currentTrack);
+}
+
+function playTrack(trackNumber) {
+    if (!musicEnabled) {
+        musicEnabled = true;
+        volumeInTheLobby.classList.remove('muted');
+        volumeInTheLobby.style.backgroundImage = "url('img/soundOn.png')";
+    }
+    
+    currentTrack = trackNumber;
+    bgMusic.src = `lobbySounds/${trackNumber}.mp3`;
+    bgMusic.load();
+    
+    bgMusic.oncanplaythrough = () => {
+        bgMusic.play().catch(e => {
+            console.log('Audio play blocked');
+        });
+    };
+    
+    updateTrackInfo();
+}
+
+function updateTrackInfo() {
+    const trackInfo = document.getElementById('track-info');
+    if (trackInfo) {
+        trackInfo.textContent = `Track ${currentTrack}/${TOTAL_TRACKS}`;
+    }
 }
 
 // Створюємо тултіп
@@ -391,9 +448,9 @@ function initVolumeControl() {
 function playRandomTrack() {
     if (!musicEnabled) return;
     
-    const trackNumber = Math.floor(Math.random() * TOTAL_TRACKS) + 1;
+    currentTrack = Math.floor(Math.random() * TOTAL_TRACKS) + 1;
     
-    bgMusic.src = `lobbySounds/${trackNumber}.mp3`;
+    bgMusic.src = `lobbySounds/${currentTrack}.mp3`;
     bgMusic.volume = 0.2;
     bgMusic.load();
     
@@ -402,6 +459,8 @@ function playRandomTrack() {
             console.log('Audio autoplay blocked. Click anywhere to enable.');
         });
     };
+    
+    updateTrackInfo();
 }
 
 // Коли трек закінчився - грати наступний
@@ -418,55 +477,18 @@ function startMusicOnInteraction() {
 }
 
 // ============================================
-// COMET CURSOR
+// COMET TRAIL (хвіст за курсором)
 // ============================================
 function initCometCursor() {
-    // Створюємо елемент курсора
-    const cursor = document.createElement('div');
-    cursor.id = 'comet-cursor';
-    document.body.appendChild(cursor);
-    
     let lastTrailTime = 0;
-    const trailInterval = 30; // Інтервал між частинками хвоста (мс)
+    const trailInterval = 40; // Інтервал між частинками хвоста (мс)
     
-    // Слідуємо за мишкою
+    // Створюємо хвіст при русі мишки
     document.addEventListener('mousemove', (e) => {
-        cursor.style.left = e.clientX + 'px';
-        cursor.style.top = e.clientY + 'px';
-        
-        // Створюємо хвіст
         const now = Date.now();
         if (now - lastTrailTime > trailInterval) {
             createTrailParticle(e.clientX, e.clientY);
             lastTrailTime = now;
-        }
-    });
-    
-    // Ховаємо курсор коли миша виходить з вікна
-    document.addEventListener('mouseleave', () => {
-        cursor.style.opacity = '0';
-    });
-    
-    document.addEventListener('mouseenter', () => {
-        cursor.style.opacity = '1';
-    });
-    
-    // Зміна кольору на ультрамарин при наведенні на планети, карточки та робота
-    // Використовуємо делегування подій для динамічних елементів
-    document.addEventListener('mouseover', (e) => {
-        if (e.target.closest('.game-card') || e.target.closest('.planet') || e.target.closest('#robot-guide')) {
-            cursor.classList.add('ultramarine');
-        }
-    });
-    
-    document.addEventListener('mouseout', (e) => {
-        if (e.target.closest('.game-card') || e.target.closest('.planet') || e.target.closest('#robot-guide')) {
-            // Перевіряємо, чи не переходимо на інший інтерактивний елемент
-            const relatedTarget = e.relatedTarget;
-            if (!relatedTarget || 
-                (!relatedTarget.closest('.game-card') && !relatedTarget.closest('.planet') && !relatedTarget.closest('#robot-guide'))) {
-                cursor.classList.remove('ultramarine');
-            }
         }
     });
 }
@@ -488,7 +510,7 @@ function createTrailParticle(x, y) {
     // Видаляємо після анімації
     setTimeout(() => {
         trail.remove();
-    }, 500);
+    }, 700);
 }
 
 // Ініціалізація при завантаженні сторінки

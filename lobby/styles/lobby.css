@@ -7,7 +7,6 @@
 html, body {
     height: 100vh;
     overflow: hidden;
-    cursor: none;
 }
 
 body {
@@ -21,33 +20,9 @@ body {
    COMET CURSOR
    ============================================ */
 
+/* Курсор прихований - тільки хвіст залишається */
 #comet-cursor {
-    position: fixed;
-    width: 12px;
-    height: 12px;
-    background: radial-gradient(circle at 30% 30%, #ffffff, #00d4ff 50%, #0088ff 100%);
-    border-radius: 50%;
-    pointer-events: none;
-    z-index: 9999;
-    box-shadow: 
-        0 0 10px #00d4ff,
-        0 0 20px rgba(0, 212, 255, 0.8),
-        0 0 40px rgba(0, 212, 255, 0.4);
-    transform: translate(-50%, -50%);
-    transition: transform 0.1s ease;
-}
-
-#comet-cursor::before {
-    content: '';
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    width: 6px;
-    height: 6px;
-    background: #ffffff;
-    border-radius: 50%;
-    transform: translate(-50%, -50%);
-    box-shadow: 0 0 8px #ffffff;
+    display: none;
 }
 
 .comet-trail {
@@ -59,7 +34,7 @@ body {
     pointer-events: none;
     z-index: 9998;
     transform: translate(-50%, -50%);
-    animation: cometFade 0.5s ease-out forwards;
+    animation: cometFade 0.7s ease-out forwards;
 }
 
 @keyframes cometFade {
@@ -74,27 +49,8 @@ body {
 }
 
 /* Cursor styles for interactive elements */
-a, button, .play-btn, #sound-btn, #robot-guide {
+a, button, .play-btn, #sound-btn, #robot-guide, .game-card, .planet {
     cursor: pointer;
-}
-
-/* Keep comet cursor on cards, planets and robot - no pointer */
-.game-card, .planet, #robot-guide {
-    cursor: none;
-}
-
-/* Anthracite comet cursor variant for interactive elements */
-#comet-cursor.ultramarine {
-    background: radial-gradient(circle at 30% 30%, #667eea, #3f51b5 50%, #1a237e 100%);
-    box-shadow: 
-        0 0 10px #5c6bc0,
-        0 0 20px rgba(63, 81, 181, 0.8),
-        0 0 40px rgba(26, 35, 126, 0.4);
-}
-
-#comet-cursor.ultramarine::before {
-    background: #9fa8da;
-    box-shadow: 0 0 8px #7986cb;
 }
 
 /* Анімований фон */
@@ -251,7 +207,7 @@ h1 {
     background: linear-gradient(145deg, rgba(30, 30, 60, 0.8), rgba(20, 20, 40, 0.9));
     border-radius: 20px;
     overflow: hidden;
-    cursor: none;
+    cursor: pointer;
     transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
     border: 1px solid rgba(167, 22, 22, 0.1);
     backdrop-filter: blur(10px);
@@ -773,12 +729,12 @@ footer a {
     top: 20px;
     right: 85px;
     display: flex;
-    align-items: center;
-    gap: 12px;
+    flex-direction: column;
+    gap: 10px;
     background: linear-gradient(135deg, rgba(20, 20, 50, 0.95), rgba(10, 10, 30, 0.98));
     border: 1px solid rgba(0, 242, 255, 0.4);
-    border-radius: 30px;
-    padding: 12px 20px;
+    border-radius: 15px;
+    padding: 12px 16px;
     opacity: 0;
     visibility: hidden;
     transform: translateX(20px);
@@ -787,6 +743,104 @@ footer a {
     box-shadow: 
         0 0 20px rgba(0, 242, 255, 0.2),
         0 0 40px rgba(0, 0, 0, 0.5);
+}
+
+.volume-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.track-controls {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    padding-top: 10px;
+    border-top: 1px solid rgba(138, 43, 226, 0.2);
+}
+
+.track-btn {
+    background: radial-gradient(ellipse at center, rgba(138, 43, 226, 0.3) 0%, rgba(0, 0, 30, 0.8) 70%);
+    border: 1px solid rgba(138, 43, 226, 0.5);
+    width: 36px;
+    height: 36px;
+    font-size: 14px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    border-radius: 50%;
+    box-shadow: 
+        0 0 10px rgba(138, 43, 226, 0.3),
+        inset 0 0 15px rgba(0, 0, 0, 0.5);
+    overflow: hidden;
+}
+
+/* Зірки всередині кнопки */
+.track-btn::before {
+    content: '✦';
+    position: absolute;
+    font-size: 6px;
+    color: rgba(255, 255, 255, 0.6);
+    top: 6px;
+    right: 8px;
+    animation: twinkle 1.5s ease-in-out infinite;
+}
+
+.track-btn::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(circle at 30% 30%, rgba(255, 255, 255, 0.1) 0%, transparent 50%);
+    border-radius: 50%;
+}
+
+.track-btn:hover {
+    transform: scale(1.15);
+    border-color: rgba(0, 242, 255, 0.8);
+    background: radial-gradient(ellipse at center, rgba(0, 150, 255, 0.4) 0%, rgba(138, 43, 226, 0.3) 50%, rgba(0, 0, 30, 0.9) 100%);
+    box-shadow: 
+        0 0 20px rgba(0, 242, 255, 0.5),
+        0 0 40px rgba(138, 43, 226, 0.3),
+        inset 0 0 20px rgba(0, 150, 255, 0.2);
+}
+
+.track-btn:active {
+    transform: scale(1.05);
+    box-shadow: 
+        0 0 30px rgba(255, 255, 255, 0.6),
+        0 0 60px rgba(0, 242, 255, 0.4);
+}
+
+@keyframes twinkle {
+    0%, 100% { opacity: 0.4; }
+    50% { opacity: 1; }
+}
+
+.track-info {
+    background: linear-gradient(135deg, #e0e0ff 0%, #a0a0ff 50%, #00f2ff 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    font-size: 10px;
+    font-weight: 600;
+    min-width: 60px;
+    text-align: center;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    text-shadow: 0 0 10px rgba(0, 242, 255, 0.3);
+    position: relative;
+}
+
+.track-info::before {
+    content: '🌌';
+    position: absolute;
+    left: -16px;
+    font-size: 10px;
+    opacity: 0.7;
 }
 
 .volume-container.visible {

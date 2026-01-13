@@ -14,7 +14,7 @@
 /* Планета */
 .planet {
     position: absolute;
-    cursor: none;
+    cursor: pointer;
     pointer-events: auto;
     transition: transform 0.3s ease, filter 0.3s ease;
 }
