@@ -18,6 +18,10 @@ export class PowerUp {
         this.animTime = Math.random() * 100;
         this.oscillation = Math.random() * Math.PI * 2;
         
+        // Властивості для бонусів рівня
+        this.isLevelBonus = false;
+        this.lifeTime = undefined;
+        
         this.container = this.createSprite();
     }
     
@@ -28,30 +32,57 @@ export class PowerUp {
                 icon: '🛡️',
                 name: 'SHIELD',
                 duration: 600, // 10 секунд
+                permanent: false,
             },
             doubleShot: {
                 color: 0xff6600,
                 icon: '🔥',
                 name: 'DOUBLE',
                 duration: 480,
+                permanent: false,
             },
             tripleShot: {
                 color: 0xff00ff,
                 icon: '⚡',
                 name: 'TRIPLE',
                 duration: 360,
+                permanent: false,
             },
             speed: {
                 color: 0x00ff00,
                 icon: '💨',
                 name: 'SPEED',
                 duration: 480,
+                permanent: false,
             },
             health: {
                 color: 0xff0066,
                 icon: '❤️',
                 name: 'HEALTH',
                 duration: 0, // Миттєвий ефект
+                permanent: false,
+            },
+            // Перманентні апгрейди
+            guns: {
+                color: 0xff8c42,
+                icon: '🔫',
+                name: 'GUNS UP!',
+                duration: 0,
+                permanent: true,
+            },
+            blasters: {
+                color: 0xc040ff,
+                icon: '⚡',
+                name: 'BLASTERS!',
+                duration: 0,
+                permanent: true,
+            },
+            missiles: {
+                color: 0xffc400,
+                icon: '🚀',
+                name: 'MISSILES!',
+                duration: 0,
+                permanent: true,
             },
         };
         return configs[this.type];
@@ -167,6 +198,44 @@ export class PowerUp {
                 icon.fill(config.color);
                 icon.rect(-8, -2, 16, 4);
                 icon.fill(config.color);
+                break;
+                
+            case 'guns':
+                // Пушки - дві гармати
+                icon.roundRect(-7, -6, 5, 12, 2);
+                icon.fill(config.color);
+                icon.roundRect(2, -6, 5, 12, 2);
+                icon.fill(config.color);
+                icon.circle(-4, -8, 3);
+                icon.fill(0xffffff);
+                icon.circle(5, -8, 3);
+                icon.fill(0xffffff);
+                break;
+                
+            case 'blasters':
+                // Бластери - три промені під кутом
+                icon.moveTo(0, -10);
+                icon.lineTo(0, 6);
+                icon.stroke({ width: 3, color: config.color });
+                icon.moveTo(-8, -6);
+                icon.lineTo(-4, 6);
+                icon.stroke({ width: 2, color: config.color });
+                icon.moveTo(8, -6);
+                icon.lineTo(4, 6);
+                icon.stroke({ width: 2, color: config.color });
+                break;
+                
+            case 'missiles':
+                // Ракета
+                icon.roundRect(-3, -10, 6, 16, 3);
+                icon.fill(config.color);
+                icon.moveTo(-4, 6);
+                icon.lineTo(0, 10);
+                icon.lineTo(4, 6);
+                icon.closePath();
+                icon.fill(0xff3300);
+                icon.circle(0, -6, 3);
+                icon.fill(0xffffff);
                 break;
         }
         

@@ -9,9 +9,9 @@ export class Background {
         this.bushes = [];
     }
     
-    create() {
+    create(theme = {}) {
         // Небо (градієнт симулюється кількома прямокутниками)
-        this.createSky();
+        this.createSky(theme.skyColors);
         
         // Далекі гори
         this.createMountains();
@@ -29,8 +29,8 @@ export class Background {
         this.game.worldContainer.addChildAt(this.container, 0);
     }
     
-    createSky() {
-        const skyColors = [0x5c94fc, 0x74a8fc, 0x8cbcfc, 0xa4d0fc];
+    createSky(customColors) {
+        const skyColors = customColors || [0x5c94fc, 0x74a8fc, 0x8cbcfc, 0xa4d0fc];
         const segmentHeight = this.game.screenHeight / skyColors.length;
         
         skyColors.forEach((color, index) => {

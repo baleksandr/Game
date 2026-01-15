@@ -11,6 +11,8 @@ export class Enemy {
         this.velocityX = -1.5;
         this.isDead = false;
         this.animProgress = 0;
+        this.lastX = x;
+        this.stuckTime = 0;
         
         this.patrolStart = x - 100;
         this.patrolEnd = x + 100;
@@ -117,6 +119,28 @@ export class Enemy {
                 this.velocityX *= -1;
             }
         }
+        
+        // Антизастряг: якщо майже не рухається тривалий час — розвертаємось, трохи зсуваємось і оновлюємо коридор
+        const moved = Math.abs(this.x - this.lastX);
+        if (moved < 0.1) {
+            this.stuckTime += delta;
+            if (this.stuckTime > 60) { // запасний ресет коридору при довгому простої
+                this.patrolStart = this.x - 160;
+                this.patrolEnd = this.x + 160;
+                this.velocityX *= -1;
+                this.stuckTime = 0;
+            } else if (this.stuckTime > 24) { // ~0.4 c при 60fps
+                // невеликий поштовх у протилежний бік
+                this.velocityX *= -1;
+                this.x += this.velocityX > 0 ? 12 : -12;
+                this.patrolStart = this.x - 140;
+                this.patrolEnd = this.x + 140;
+                this.stuckTime = 0;
+            }
+        } else {
+            this.stuckTime = 0;
+        }
+        this.lastX = this.x;
         
         // Анімація ходьби
         this.animProgress += delta * 0.2;

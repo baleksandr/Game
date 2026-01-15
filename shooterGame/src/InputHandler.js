@@ -2,6 +2,7 @@ export class InputHandler {
     constructor(game) {
         this.game = game;
         this.keys = {};
+        this.mouseFollow = true;
         
         this.init();
     }
@@ -27,6 +28,11 @@ export class InputHandler {
             // Пауза
             if (e.code === 'Escape' || e.code === 'KeyP') {
                 this.game.isPaused = !this.game.isPaused;
+            }
+
+            // Перемикач керування мишею
+            if (e.code === 'KeyM') {
+                this.mouseFollow = !this.mouseFollow;
             }
         }, { passive: false });
         
@@ -97,22 +103,32 @@ export class InputHandler {
         const canvas = this.game.app?.canvas;
         if (!canvas) return;
         
-        // Автоматична стрільба при утриманні миші
+        // Стрільба та рух при утриманні миші
         canvas.addEventListener('mousedown', (e) => {
             if (e.button === 0) {
                 this.keys['MouseLeft'] = true;
-                this.keys['Space'] = true;
             }
         });
         
         canvas.addEventListener('mouseup', (e) => {
             if (e.button === 0) {
                 this.keys['MouseLeft'] = false;
-                this.keys['Space'] = false;
             }
         });
         
-        // Рух мишею (опціонально - для руху кораблем за мишею)
+        // Скидаємо стан миші якщо курсор виходить за межі canvas
+        canvas.addEventListener('mouseleave', () => {
+            this.keys['MouseLeft'] = false;
+        });
+        
+        // Глобальний mouseup для випадків коли мишу відпускають за межами canvas
+        window.addEventListener('mouseup', (e) => {
+            if (e.button === 0) {
+                this.keys['MouseLeft'] = false;
+            }
+        });
+        
+        // Рух мишею
         canvas.addEventListener('mousemove', (e) => {
             const rect = canvas.getBoundingClientRect();
             this.mouseX = e.clientX - rect.left;

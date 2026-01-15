@@ -30,9 +30,95 @@
     <div class="loader-container">
         <div class="loaderPause"></div>
     </div>
-    <div class="grid">
-        <!-- Вміст грида -->
+    
+    <button class="info-btn" id="info-btn" aria-label="Game info">i</button>
+    <div class="info-modal" id="info-modal" aria-hidden="true">
+        <div class="info-content">
+            <button class="info-close" id="info-close" aria-label="Close info">×</button>
+            <h2>Snake</h2>
+            <p>Збирай їжу, уникай зіткнень з тілом та стінами-перешкодами. Кожні 7 яблук — новий рівень і більша швидкість.</p>
+            <ul>
+                <li>Клавіші: ← ↑ → ↓ для руху.</li>
+                <li>Space — пауза, R — швидкий рестарт.</li>
+                <li>Бонуси: жовтий 2x score, блакитний slowdown.</li>
+                <li>Перетин стін — з’являєшся з протилежного боку.</li>
+            </ul>
+        </div>
     </div>
+    
+    <div class="game-container">
+        <div class="grid">
+            <!-- Вміст грида -->
+        </div>
+        
+        <!-- Score Panel -->
+        <div class="score-panel">
+            <div class="score-title">🐍 SNAKE</div>
+            
+            <div class="score-block">
+                <div class="score-label">SCORE</div>
+                <div class="score-value" id="current-score">0</div>
+            </div>
+            
+            <div class="score-block">
+                <div class="score-label">LEVEL</div>
+                <div class="score-value level" id="current-level">1</div>
+            </div>
+            
+            <div class="score-block">
+                <div class="score-label">HIGH SCORE</div>
+                <div class="score-value high" id="high-score">0</div>
+            </div>
+            
+            <div class="score-block small">
+                <div class="score-label">LENGTH</div>
+                <div class="score-value" id="current-length">1</div>
+            </div>
+            
+            <div class="score-block small">
+                <div class="score-label">SPEED</div>
+                <div class="speed-bar">
+                    <div class="speed-fill" id="speed-fill"></div>
+                </div>
+            </div>
+            
+            <div class="score-block bonus-indicator" id="bonus-indicator" style="display: none;">
+                <div class="score-label">BONUS</div>
+                <div class="bonus-active" id="bonus-active">2x SCORE</div>
+            </div>
+            
+            <div class="legend">
+                <div class="legend-item"><span class="legend-box obstacle"></span> Wall</div>
+                <div class="legend-item"><span class="legend-box bonus-double"></span> 2x score</div>
+                <div class="legend-item"><span class="legend-box bonus-slow"></span> Slowdown</div>
+            </div>
+            
+            <div class="controls-info">
+                <div class="control-title">CONTROLS</div>
+                <div class="control-keys">
+                    <span>↑</span>
+                    <div class="control-row">
+                        <span>←</span>
+                        <span>↓</span>
+                        <span>→</span>
+                    </div>
+                </div>
+                <div class="control-hint">SPACE - Pause</div>
+                <div class="control-hint">R - Quick restart</div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="touch-controls">
+        <button class="touch-btn up" data-dir="ArrowUp">▲</button>
+        <div class="touch-row">
+            <button class="touch-btn left" data-dir="ArrowLeft">◀</button>
+            <button class="touch-btn pause" data-action="pause">⏯</button>
+            <button class="touch-btn right" data-dir="ArrowRight">▶</button>
+        </div>
+        <button class="touch-btn down" data-dir="ArrowDown">▼</button>
+    </div>
+    
     <div class="gameOver">
         <div class="btn-restartSnake">
             <div class="titleGameOver">

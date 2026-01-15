@@ -9,11 +9,19 @@ export class Player {
         this.width = 50;
         this.height = 50;
         
-        this.baseSpeed = 6;
+        this.baseSpeed = 7;
         this.speed = this.baseSpeed;
         this.shootCooldown = 0;
         this.baseShootDelay = 8;
         this.shootDelay = this.baseShootDelay;
+        this.homingUnlocked = false;
+        this.missileCooldown = 0;
+        this.missileDelay = 45;
+        this.doubleMissiles = false;
+        
+        // Апгрейди бластерів
+        this.sideBlasters = false;
+        this.omniBlasters = false;
         
         this.isFlashing = false;
         this.flashTimer = 0;
@@ -213,34 +221,64 @@ export class Player {
         const input = this.game.inputHandler;
         this.animTime += delta * 0.1;
         
-        // Рух
-        let moving = false;
+        // Рух клавіатурою
+        let keyboardMoving = false;
+        let dx = 0, dy = 0;
+        
         if (input.isKeyDown('ArrowLeft') || input.isKeyDown('KeyA')) {
-            this.x -= this.speed * delta;
-            this.targetTilt = -0.2;
-            moving = true;
-        } else if (input.isKeyDown('ArrowRight') || input.isKeyDown('KeyD')) {
-            this.x += this.speed * delta;
-            this.targetTilt = 0.2;
-            moving = true;
-        } else {
-            this.targetTilt = 0;
+            dx -= this.speed * delta;
+            this.targetTilt = -0.25;
+            keyboardMoving = true;
         }
-        
-        // Плавний нахил
-        this.tiltAngle += (this.targetTilt - this.tiltAngle) * 0.15;
-        this.container.rotation = this.tiltAngle;
-        
-        // Вертикальний рух
+        if (input.isKeyDown('ArrowRight') || input.isKeyDown('KeyD')) {
+            dx += this.speed * delta;
+            this.targetTilt = 0.25;
+            keyboardMoving = true;
+        }
         if (input.isKeyDown('ArrowUp') || input.isKeyDown('KeyW')) {
-            this.y -= this.speed * delta;
+            dy -= this.speed * delta;
             this.isBoosting = true;
+            keyboardMoving = true;
         } else {
             this.isBoosting = false;
         }
         if (input.isKeyDown('ArrowDown') || input.isKeyDown('KeyS')) {
-            this.y += this.speed * delta * 0.7;
+            dy += this.speed * delta * 0.8;
+            keyboardMoving = true;
         }
+        
+        if (keyboardMoving) {
+            this.x += dx;
+            this.y += dy;
+            if (dx === 0) this.targetTilt = 0;
+        } else {
+            this.targetTilt = 0;
+        }
+        
+        // Рух за мишею (тільки при натиснутій кнопці миші)
+        const mousePressed = input.isKeyDown('MouseLeft');
+        if (mousePressed && input.mouseX !== undefined && input.mouseY !== undefined) {
+            const mouseSpeed = keyboardMoving ? 0.08 : 0.18;
+            const lerp = mouseSpeed * delta;
+            
+            const targetX = input.mouseX;
+            const targetY = input.mouseY;
+            
+            const diffX = targetX - this.x;
+            const diffY = targetY - this.y;
+            
+            this.x += diffX * lerp;
+            this.y += diffY * lerp;
+            
+            // Нахил на основі руху миші
+            if (!keyboardMoving && Math.abs(diffX) > 5) {
+                this.targetTilt = Math.max(-0.3, Math.min(0.3, diffX * 0.003));
+            }
+        }
+        
+        // Плавний нахил
+        this.tiltAngle += (this.targetTilt - this.tiltAngle) * 0.12;
+        this.container.rotation = this.tiltAngle;
         
         // Обмеження
         this.x = Math.max(30, Math.min(this.game.screenWidth - 30, this.x));
@@ -250,8 +288,13 @@ export class Player {
         if (this.shootCooldown > 0) {
             this.shootCooldown -= delta;
         }
+        if (this.missileCooldown > 0) {
+            this.missileCooldown -= delta;
+        }
         
-        if ((input.isKeyDown('Space') || input.isKeyDown('KeyZ')) && this.shootCooldown <= 0) {
+        // Стрільба клавіатурою або мишею
+        const shooting = input.isKeyDown('Space') || input.isKeyDown('KeyZ') || input.isKeyDown('MouseLeft');
+        if (shooting && this.shootCooldown <= 0) {
             this.shoot();
             this.shootCooldown = this.shootDelay;
         }
@@ -346,16 +389,29 @@ export class Player {
         this.game.shoot(this.x - 20, this.y - 15);
         this.game.shoot(this.x + 20, this.y - 15);
         
-        // Triple Shot - додаткова куля по центру
-        if (this.hasUpgrade('tripleShot')) {
+        // Double Shot - додаткова куля по центру
+        if (this.hasUpgrade('doubleShot')) {
             this.game.shoot(this.x, this.y - 20);
-            // Бічні кулі під кутом
-            this.game.shoot(this.x - 25, this.y - 10, -Math.PI / 2 - 0.2);
-            this.game.shoot(this.x + 25, this.y - 10, -Math.PI / 2 + 0.2);
         }
-        // Double Shot - швидша стрільба (вже в shootDelay)
-        else if (this.hasUpgrade('doubleShot')) {
-            this.game.shoot(this.x, this.y - 20);
+        
+        // Бічні бластери
+        if (this.sideBlasters) {
+            this.game.shoot(this.x - 28, this.y, -Math.PI / 2 - 0.15);
+            this.game.shoot(this.x + 28, this.y, -Math.PI / 2 + 0.15);
+        }
+        
+        // Triple Shot - ще більше куль під кутом
+        if (this.hasUpgrade('tripleShot')) {
+            this.game.shoot(this.x - 25, this.y - 10, -Math.PI / 2 - 0.25);
+            this.game.shoot(this.x + 25, this.y - 10, -Math.PI / 2 + 0.25);
+        }
+        
+        // Омні-бластери — кулі в усіх напрямках
+        if (this.omniBlasters) {
+            this.game.shoot(this.x - 30, this.y + 5, -Math.PI / 2 - 0.4);
+            this.game.shoot(this.x + 30, this.y + 5, -Math.PI / 2 + 0.4);
+            this.game.shoot(this.x, this.y + 10, -Math.PI / 2 - 0.6);
+            this.game.shoot(this.x, this.y + 10, -Math.PI / 2 + 0.6);
         }
         
         // Ефект віддачі
@@ -367,6 +423,24 @@ export class Player {
         
         if (this.hasUpgrade('tripleShot') || this.hasUpgrade('doubleShot')) {
             this.game.particles.createMuzzleFlash(this.x, this.y - 25);
+        }
+        
+        if (this.sideBlasters || this.omniBlasters) {
+            this.game.particles.createMuzzleFlash(this.x - 28, this.y - 5);
+            this.game.particles.createMuzzleFlash(this.x + 28, this.y - 5);
+        }
+
+        // Ракети самонаведення
+        if (this.homingUnlocked && this.missileCooldown <= 0) {
+            this.game.shootMissile(this.x, this.y - 30);
+            
+            // Подвійні ракети
+            if (this.doubleMissiles) {
+                this.game.shootMissile(this.x - 25, this.y - 20);
+                this.game.shootMissile(this.x + 25, this.y - 20);
+            }
+            
+            this.missileCooldown = this.missileDelay;
         }
     }
     

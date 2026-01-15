@@ -7,6 +7,7 @@ import { InputHandler } from './InputHandler.js';
 import { ParticleSystem } from './ParticleSystem.js';
 import { SpineManager } from './SpineManager.js';
 import { PowerUp } from './PowerUp.js';
+import { HomingMissile } from './HomingMissile.js';
 import { SoundManager } from './SoundManager.js';
 
 export class Game {
@@ -16,6 +17,7 @@ export class Game {
         this.enemies = [];
         this.bullets = [];
         this.enemyBullets = [];
+        this.missiles = [];
         this.powerUps = [];
         this.particles = null;
         this.background = null;
@@ -26,6 +28,14 @@ export class Game {
         this.wave = 1;
         this.health = 100;
         this.maxHealth = 100;
+        this.credits = 0;
+        this.levelCredits = 0; // Кредити зібрані на поточному рівні
+        
+        // Система рівнів
+        this.level = 1;
+        this.levelScoreGoal = 10000; // Очки для переходу на наступний рівень
+        this.levelScore = 0; // Очки на поточному рівні
+        this.levelCompleting = false; // Флаг для запобігання повторного виклику
         
         this.isGameOver = false;
         this.isPaused = false;
@@ -34,16 +44,23 @@ export class Game {
         this.screenHeight = 600;
         
         this.enemySpawnTimer = 0;
-        this.enemySpawnInterval = 60;
-        this.enemiesPerWave = 5;
+        this.enemySpawnInterval = 50; // Швидший спавн
+        this.enemiesPerWave = 8; // Більше ворогів на хвилю
         this.enemiesSpawned = 0;
         this.enemiesKilled = 0;
         
         // Спавн апгрейдів
         this.powerUpSpawnTimer = 0;
-        this.powerUpSpawnInterval = 300; // Кожні ~5 секунд
+        this.powerUpSpawnInterval = 250; // Частіший спавн
         
         this.worldContainer = null;
+        
+        // Апгрейди корабля (перманентні)
+        this.shipUpgrades = {
+            guns: 0,      // Рівень пушок (0-3)
+            blasters: 0,  // Рівень бластерів (0-3)
+            missiles: 0,  // Рівень ракет (0-3)
+        };
     }
     
     async init() {
@@ -94,11 +111,27 @@ export class Game {
         
         // Створюємо UI для апгрейдів
         this.createUpgradeUI();
+        this.createShopStyles();
+        const wallet = document.getElementById('credits');
+        if (wallet) wallet.textContent = this.credits.toLocaleString();
+        
+        // Оновлюємо UI рівня
+        this.updateLevelUI();
         
         // Створюємо кнопку звуку
         this.createSoundButton();
         
+        // Спавнимо стартовий бонус для рівня 1
+        setTimeout(() => {
+            this.spawnLevelBonus();
+        }, 3000);
+        
         console.log('🚀 Space Shooter initialized!');
+        console.log('🎯 Level Goal: ' + this.levelScoreGoal + ' points');
+    }
+
+    createShopStyles() {
+        // Стилі винесені в styles/style.css
     }
     
     createUpgradeUI() {
@@ -110,71 +143,7 @@ export class Game {
         `;
         // Додаємо до game-container, не ui-overlay
         document.getElementById('game-container').appendChild(upgradePanel);
-        
-        // Додаємо стилі
-        const style = document.createElement('style');
-        style.textContent = `
-            #upgrade-panel {
-                position: absolute;
-                bottom: 20px;
-                left: 20px;
-                background: rgba(0, 0, 0, 0.7);
-                border: 1px solid rgba(0, 255, 242, 0.4);
-                border-radius: 8px;
-                padding: 8px 15px;
-                display: flex;
-                align-items: center;
-                gap: 10px;
-                pointer-events: none;
-                z-index: 55;
-            }
-            .upgrade-label {
-                font-size: 10px;
-                color: rgba(0, 255, 242, 0.7);
-                letter-spacing: 2px;
-            }
-            #upgrade-icons {
-                display: flex;
-                gap: 8px;
-            }
-            .upgrade-icon {
-                width: 32px;
-                height: 32px;
-                border-radius: 6px;
-                display: flex;
-                align-items: center;
-                justify-content: center;
-                font-size: 16px;
-                position: relative;
-                animation: upgradeGlow 1s ease-in-out infinite alternate;
-            }
-            .upgrade-icon.shield { background: rgba(0, 255, 255, 0.3); border: 2px solid #00ffff; }
-            .upgrade-icon.doubleShot { background: rgba(255, 102, 0, 0.3); border: 2px solid #ff6600; }
-            .upgrade-icon.tripleShot { background: rgba(255, 0, 255, 0.3); border: 2px solid #ff00ff; }
-            .upgrade-icon.speed { background: rgba(0, 255, 0, 0.3); border: 2px solid #00ff00; }
-            .upgrade-timer {
-                position: absolute;
-                bottom: -2px;
-                left: 0;
-                height: 3px;
-                background: #fff;
-                border-radius: 2px;
-                transition: width 0.1s;
-            }
-            @keyframes upgradeGlow {
-                from { box-shadow: 0 0 5px currentColor; }
-                to { box-shadow: 0 0 15px currentColor; }
-            }
-            .upgrade-icon.losing {
-                animation: upgradeLose 0.5s ease-out;
-            }
-            @keyframes upgradeLose {
-                0% { transform: scale(1); }
-                50% { transform: scale(1.3); background: rgba(255,0,0,0.5); }
-                100% { transform: scale(0); opacity: 0; }
-            }
-        `;
-        document.head.appendChild(style);
+        // Стилі винесені в styles/style.css
     }
     
     gameLoop(ticker) {
@@ -186,6 +155,7 @@ export class Game {
         this.player.update(delta);
         this.updateEnemies(delta);
         this.updateBullets(delta);
+        this.updateMissiles(delta);
         this.updatePowerUps(delta);
         this.particles.update(delta);
         
@@ -233,11 +203,41 @@ export class Game {
             }
         }
     }
+
+    updateMissiles(delta) {
+        for (let i = this.missiles.length - 1; i >= 0; i--) {
+            const missile = this.missiles[i];
+            missile.update(delta);
+            if (missile.y < -40 || missile.y > this.screenHeight + 60 ||
+                missile.x < -60 || missile.x > this.screenWidth + 60) {
+                this.worldContainer.removeChild(missile.sprite);
+                this.missiles.splice(i, 1);
+            }
+        }
+    }
     
     updatePowerUps(delta) {
         for (let i = this.powerUps.length - 1; i >= 0; i--) {
             const powerUp = this.powerUps[i];
             powerUp.update(delta);
+            
+            // Обробка часу життя для бонусів рівня
+            if (powerUp.isLevelBonus && powerUp.lifeTime !== undefined) {
+                powerUp.lifeTime -= delta;
+                
+                // Блимання коли залишилось мало часу (~5 секунд)
+                if (powerUp.lifeTime < 300) {
+                    powerUp.container.alpha = 0.5 + Math.sin(powerUp.lifeTime * 0.4) * 0.5;
+                }
+                
+                // Видаляємо якщо час вийшов
+                if (powerUp.lifeTime <= 0) {
+                    this.worldContainer.removeChild(powerUp.container);
+                    this.powerUps.splice(i, 1);
+                    this.showMessage('Бонус зник!', 0xff6666);
+                    continue;
+                }
+            }
             
             // Видаляємо якщо за екраном або зібрано
             if (powerUp.y > this.screenHeight + 50 || powerUp.collected) {
@@ -304,6 +304,25 @@ export class Game {
                 }
             }
         }
+
+        // Ракети гравця vs вороги
+        for (let i = this.missiles.length - 1; i >= 0; i--) {
+            const missile = this.missiles[i];
+            for (let j = this.enemies.length - 1; j >= 0; j--) {
+                const enemy = this.enemies[j];
+                if (this.checkCollision(missile, enemy)) {
+                    const destroyed = enemy.takeDamage(missile.damage);
+                    this.particles.createExplosion(missile.x, missile.y);
+                    this.sound.playExplosion();
+                    this.worldContainer.removeChild(missile.sprite);
+                    this.missiles.splice(i, 1);
+                    if (destroyed) {
+                        this.enemyDestroyed(enemy, j);
+                    }
+                    break;
+                }
+            }
+        }
         
         // Ворожі кулі vs гравець
         for (let i = this.enemyBullets.length - 1; i >= 0; i--) {
@@ -356,6 +375,7 @@ export class Game {
         this.particles.createExplosion(enemy.x, enemy.y);
         this.sound.playExplosion();
         this.addScore(enemy.type === 'heavy' ? 200 : 100);
+        this.addCredits(enemy.type === 'heavy' ? 120 : 80);
         this.enemiesKilled++;
         
         // Шанс дропу апгрейду при знищенні ворога
@@ -376,6 +396,13 @@ export class Game {
         
         const config = powerUp.getConfig();
         
+        // Перевіряємо чи це перманентний апгрейд
+        if (config.permanent) {
+            this.applyPermanentUpgrade(powerUp.type);
+            this.showMessage('🎉 ' + config.name, config.color);
+            return;
+        }
+        
         // Застосовуємо ефект
         if (powerUp.type === 'health') {
             // Миттєве лікування
@@ -387,6 +414,16 @@ export class Game {
             this.player.addUpgrade(powerUp.type, config.duration);
             this.showMessage(config.name + '!', config.color);
         }
+    }
+    
+    applyPermanentUpgrade(type) {
+        // Збільшуємо рівень апгрейду
+        if (this.shipUpgrades[type] < 3) {
+            this.shipUpgrades[type]++;
+        }
+        
+        // Застосовуємо ефекти
+        this.applyShipUpgrades();
     }
     
     showMessage(text, color) {
@@ -524,6 +561,16 @@ export class Game {
             this.powerUps.push(powerUp);
             this.worldContainer.addChild(powerUp.container);
         }
+
+        // Магазин апгрейдів після переходу на 2 хвилю
+        if (this.wave === 2) {
+            this.openUpgradeShop();
+        }
+
+        // Обнуляємо кредит хвилі після відкриття магазину
+        if (this.wave > 1) {
+            this.waveCredits = 0;
+        }
     }
     
     showWaveMessage() {
@@ -569,10 +616,423 @@ export class Game {
         
         animate();
     }
+
+    openUpgradeShop() {
+        // Старий метод — тепер не використовується
+    }
+
+    openLevelUpgradeShop() {
+        if (this.shopOpen) return;
+        this.shopOpen = true;
+        
+        // Кошик вибраних апгрейдів
+        const cart = new Map(); // id -> nextLevel
+        let availableCredits = this.levelCredits;
+        
+        const upgrades = [
+            { 
+                id: 'guns', 
+                title: '🔫 ПУШКИ', 
+                desc: 'Швидша стрільба та більше снарядів',
+                levels: ['Базові пушки', 'Подвійний постріл', 'Швидкострільні', 'Максимальна потужність'],
+                costs: [0, 200, 400, 800],
+                color: '#ff8c42',
+                preview: '● ● → ●●● → 🔥🔥🔥',
+                minLevel: 1 // Доступно з 1 рівня
+            },
+            { 
+                id: 'blasters', 
+                title: '⚡ БЛАСТЕРИ', 
+                desc: 'Додаткові кулі під кутом',
+                levels: ['Немає', 'Бічні бластери', 'Triple shot', 'Омні-бластери'],
+                costs: [0, 300, 600, 1000],
+                color: '#c040ff',
+                preview: '↑ → ↖↑↗ → 🌟360°',
+                minLevel: 2 // Доступно з 2 рівня
+            },
+            { 
+                id: 'missiles', 
+                title: '🚀 РАКЕТИ', 
+                desc: 'Самонавідні ракети з високою шкодою',
+                levels: ['Немає', 'Базові ракети', 'Швидкі ракети', 'Мега-ракети'],
+                costs: [0, 350, 700, 1200],
+                color: '#ffc400',
+                preview: '🚀 → 🚀🚀 → 💥💥💥',
+                minLevel: 3 // Доступно з 3 рівня
+            },
+        ];
+        
+        const overlay = document.createElement('div');
+        overlay.id = 'shop-overlay';
+        
+        // Створюємо контейнер для панелі один раз
+        const panelContainer = document.createElement('div');
+        panelContainer.className = 'shop-panel wide';
+        overlay.appendChild(panelContainer);
+        
+        const renderShop = () => {
+            const totalCost = Array.from(cart.entries()).reduce((sum, [id, lvl]) => {
+                const upg = upgrades.find(u => u.id === id);
+                return sum + upg.costs[lvl];
+            }, 0);
+            
+            availableCredits = this.levelCredits - totalCost;
+            
+            const cards = upgrades.map(u => {
+                const baseLevel = this.shipUpgrades[u.id];
+                const inCart = cart.has(u.id);
+                const cartLevel = inCart ? cart.get(u.id) : baseLevel;
+                const nextLevel = cartLevel + 1;
+                const maxed = nextLevel > 3;
+                const cost = maxed ? 0 : u.costs[nextLevel];
+                const canAfford = availableCredits >= cost;
+                const locked = this.level < u.minLevel; // Перевірка чи доступний апгрейд
+                
+                if (locked) {
+                    return `
+                        <div class="shop-card locked" data-id="${u.id}">
+                            <h4 style="color:#666">🔒 ${u.title}</h4>
+                            <p style="color:#888">${u.desc}</p>
+                            <div class="locked-label">Доступно з рівня ${u.minLevel}</div>
+                        </div>
+                    `;
+                }
+                
+                return `
+                    <div class="shop-card ${maxed ? 'maxed' : ''} ${inCart ? 'selected' : ''}" data-id="${u.id}">
+                        <h4 style="color:${u.color}">${u.title}</h4>
+                        <p>${u.desc}</p>
+                        <div class="upgrade-preview">${u.preview}</div>
+                        <div class="upgrade-levels">
+                            ${u.levels.map((lvl, i) => `
+                                <span class="level-dot ${i <= baseLevel ? 'active' : ''} ${inCart && i === cartLevel ? 'pending' : ''}" title="${lvl}"></span>
+                            `).join('')}
+                        </div>
+                        <div class="current-level">
+                            ${inCart ? `<span class="pending-text">→ ${u.levels[cartLevel]}</span>` : u.levels[baseLevel]}
+                        </div>
+                        ${maxed ? 
+                            '<div class="maxed-label">МАКСИМУМ</div>' : 
+                            `<div class="price ${canAfford || inCart ? '' : 'cant-afford'}">${inCart ? `Обрано: ${u.costs[cartLevel]}¢` : `Наступний: ${cost}¢`}</div>
+                            <div class="card-actions">
+                                ${inCart ? 
+                                    `<button class="remove-btn" data-upg="${u.id}">✕ Відмінити</button>` :
+                                    `<button class="add-btn" data-upg="${u.id}" ${canAfford ? '' : 'disabled'}>
+                                        ${canAfford ? '+ Додати' : 'Недостатньо'}
+                                    </button>`
+                                }
+                            </div>`
+                        }
+                    </div>
+                `;
+            }).join('');
+            
+            const cartItems = Array.from(cart.entries()).map(([id, lvl]) => {
+                const upg = upgrades.find(u => u.id === id);
+                return `<div class="cart-item">
+                    <span style="color:${upg.color}">${upg.title}</span> 
+                    <span class="cart-cost">${upg.costs[lvl]}¢</span>
+                </div>`;
+            }).join('');
+            
+            panelContainer.innerHTML = `
+                <h3>🎉 РІВЕНЬ ${this.level} ЗАВЕРШЕНО!</h3>
+                <div class="shop-subtitle">Оберіть апгрейди для корабля (можна декілька)</div>
+                <div class="shop-credits">
+                    <span class="credits-icon">💰</span>
+                    Доступно: <strong id="available-credits">${availableCredits.toLocaleString()}</strong> / ${this.levelCredits.toLocaleString()}¢
+                </div>
+                <div class="shop-grid">${cards}</div>
+                ${cart.size > 0 ? `
+                    <div class="shop-cart">
+                        <div class="cart-title">🛒 Обрані апгрейди:</div>
+                        <div class="cart-items">${cartItems}</div>
+                        <div class="cart-total">Разом: ${totalCost}¢</div>
+                    </div>
+                ` : ''}
+                <div class="shop-actions">
+                    ${cart.size > 0 ? 
+                        `<button class="confirm-btn">✓ Застосувати (${cart.size})</button>` : ''
+                    }
+                    <button class="skip-btn">${cart.size > 0 ? 'Скасувати все' : 'Продовжити без апгрейдів →'}</button>
+                </div>
+            `;
+            
+            // Додати апгрейд
+            panelContainer.querySelectorAll('.add-btn').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    const id = btn.dataset.upg;
+                    const upg = upgrades.find(u => u.id === id);
+                    const baseLevel = this.shipUpgrades[id];
+                    const nextLevel = baseLevel + 1;
+                    if (nextLevel > 3) return;
+                    
+                    const cost = upg.costs[nextLevel];
+                    if (availableCredits < cost) return;
+                    
+                    cart.set(id, nextLevel);
+                    renderShop();
+                });
+            });
+            
+            // Видалити апгрейд
+            panelContainer.querySelectorAll('.remove-btn').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    const id = btn.dataset.upg;
+                    cart.delete(id);
+                    renderShop();
+                });
+            });
+            
+            // Підтвердити
+            const confirmBtn = panelContainer.querySelector('.confirm-btn');
+            if (confirmBtn) {
+                confirmBtn.addEventListener('click', () => {
+                    // Застосовуємо всі апгрейди з кошика
+                    for (const [id, lvl] of cart.entries()) {
+                        const upg = upgrades.find(u => u.id === id);
+                        const cost = upg.costs[lvl];
+                        this.credits -= cost;
+                        this.levelCredits -= cost;
+                        this.shipUpgrades[id] = lvl;
+                    }
+                    
+                    const wallet = document.getElementById('credits');
+                    if (wallet) wallet.textContent = this.credits.toLocaleString();
+                    
+                    this.applyShipUpgrades();
+                    this.closeShopAndAdvance(overlay);
+                });
+            }
+            
+            // Пропустити / Скасувати
+            const skipBtn = panelContainer.querySelector('.skip-btn');
+            if (skipBtn) {
+                skipBtn.addEventListener('click', () => {
+                    this.closeShopAndAdvance(overlay);
+                });
+            }
+        };
+        
+        renderShop();
+        document.body.appendChild(overlay);
+    }
+
+    applyShipUpgrades() {
+        // Застосовуємо апгрейди пушок
+        if (this.shipUpgrades.guns >= 1) {
+            this.player.addUpgrade('doubleShot', 999999);
+        }
+        if (this.shipUpgrades.guns >= 2) {
+            this.player.baseShootDelay = 5;
+            this.player.shootDelay = 5;
+        }
+        if (this.shipUpgrades.guns >= 3) {
+            this.player.baseShootDelay = 3;
+            this.player.shootDelay = 3;
+        }
+        
+        // Застосовуємо апгрейди бластерів
+        if (this.shipUpgrades.blasters >= 1) {
+            this.player.sideBlasters = true;
+        }
+        if (this.shipUpgrades.blasters >= 2) {
+            this.player.addUpgrade('tripleShot', 999999);
+        }
+        if (this.shipUpgrades.blasters >= 3) {
+            this.player.omniBlasters = true;
+        }
+        
+        // Застосовуємо апгрейди ракет
+        if (this.shipUpgrades.missiles >= 1) {
+            this.player.homingUnlocked = true;
+            this.player.missileDelay = 45;
+        }
+        if (this.shipUpgrades.missiles >= 2) {
+            this.player.missileDelay = 30;
+        }
+        if (this.shipUpgrades.missiles >= 3) {
+            this.player.missileDelay = 18;
+            this.player.doubleMissiles = true;
+        }
+    }
+
+    closeShopAndAdvance(overlay) {
+        // Знімаємо паузу ПЕРШ за все
+        this.isPaused = false;
+        this.shopOpen = false;
+        this.levelCompleting = false;
+        
+        // Видаляємо overlay
+        if (overlay && overlay.parentNode) {
+            overlay.parentNode.removeChild(overlay);
+        }
+        
+        // Переходимо на наступний рівень
+        this.advanceToNextLevel();
+    }
+
+    applyShopUpgrade(type) {
+        // Старий метод — для сумісності
+    }
+
+    closeShop(overlay) {
+        overlay.remove();
+        this.shopOpen = false;
+        this.isPaused = false;
+    }
     
     addScore(points) {
         this.score += points;
+        this.levelScore += points;
         document.getElementById('score').textContent = this.score.toLocaleString();
+        
+        // Оновлюємо прогрес рівня
+        this.updateLevelUI();
+        
+        // Перевіряємо чи досягнуто цілі рівня
+        if (this.levelScore >= this.levelScoreGoal) {
+            this.completeLevel();
+        }
+    }
+
+    addCredits(amount) {
+        this.credits += amount;
+        this.levelCredits += amount;
+        const wallet = document.getElementById('credits');
+        if (wallet) wallet.textContent = this.credits.toLocaleString();
+    }
+    
+    updateLevelUI() {
+        const levelEl = document.getElementById('level');
+        if (levelEl) levelEl.textContent = this.level;
+        
+        const progressFill = document.getElementById('level-progress-fill');
+        const progressText = document.getElementById('level-progress-text');
+        
+        if (progressFill) {
+            const percent = Math.min(100, (this.levelScore / this.levelScoreGoal) * 100);
+            progressFill.style.width = percent + '%';
+        }
+        
+        if (progressText) {
+            progressText.textContent = this.levelScore.toLocaleString() + ' / ' + this.levelScoreGoal.toLocaleString();
+        }
+    }
+    
+    completeLevel() {
+        if (this.levelCompleting) return; // Запобігаємо повторному виклику
+        this.levelCompleting = true;
+        this.isPaused = true;
+        
+        // Показуємо магазин апгрейдів
+        this.openLevelUpgradeShop();
+    }
+    
+    advanceToNextLevel() {
+        // Скидаємо паузу на початку
+        this.isPaused = false;
+        this.levelCompleting = false;
+        
+        this.level++;
+        this.levelScore = 0;
+        this.levelCredits = 0;
+        
+        // Збільшуємо складність
+        this.levelScoreGoal = Math.floor(10000 * (1 + (this.level - 1) * 0.3));
+        this.enemiesPerWave = 8 + this.level * 2;
+        this.enemySpawnInterval = Math.max(30, 50 - this.level * 3);
+        
+        // Бонусне здоров'я
+        this.health = Math.min(this.health + 30, this.maxHealth);
+        this.updateHealthBar();
+        
+        this.updateLevelUI();
+        this.showLevelMessage();
+        
+        // Спавнимо бонус апгрейду для цього рівня
+        this.spawnLevelBonus();
+    }
+    
+    spawnLevelBonus() {
+        // Визначаємо який бонус спавнити для поточного рівня
+        const levelBonuses = {
+            1: 'guns',      // Рівень 1: пушки
+            2: 'blasters',  // Рівень 2: бластери
+            3: 'missiles',  // Рівень 3: ракети
+        };
+        
+        const bonusType = levelBonuses[this.level];
+        if (!bonusType) return; // Немає бонусу для цього рівня
+        
+        // Перевіряємо чи вже є цей апгрейд
+        if (this.shipUpgrades[bonusType] >= 1) return;
+        
+        // Спавнимо бонус з невеликою затримкою
+        setTimeout(() => {
+            const x = this.screenWidth / 2;
+            const powerUp = new PowerUp(this, x, -50, bonusType);
+            powerUp.isLevelBonus = true; // Позначаємо як бонус рівня
+            powerUp.lifeTime = 900; // ~15 секунд життя
+            this.powerUps.push(powerUp);
+            this.worldContainer.addChild(powerUp.container);
+            
+            // Показуємо підказку
+            this.showMessage('⬇️ БОНУС! Збери апгрейд!', 0xffc400);
+        }, 1500);
+    }
+    
+    showLevelMessage() {
+        const message = new Text({
+            text: `LEVEL ${this.level}`,
+            style: new TextStyle({
+                fontFamily: 'Orbitron',
+                fontSize: 56,
+                fontWeight: 'bold',
+                fill: 0x7dda45,
+                dropShadow: true,
+                dropShadowColor: 0x7dda45,
+                dropShadowBlur: 15,
+                dropShadowDistance: 0,
+            })
+        });
+        
+        message.anchor.set(0.5);
+        message.x = this.screenWidth / 2;
+        message.y = this.screenHeight / 2;
+        message.alpha = 0;
+        
+        this.app.stage.addChild(message);
+        
+        let progress = 0;
+        const animate = () => {
+            progress += 0.015;
+            
+            if (progress < 0.3) {
+                message.alpha = progress / 0.3;
+                message.scale.set(0.5 + progress * 1.5);
+            } else if (progress < 0.7) {
+                message.alpha = 1;
+                message.scale.set(1);
+            } else if (progress < 1) {
+                message.alpha = 1 - (progress - 0.7) / 0.3;
+            } else {
+                this.app.stage.removeChild(message);
+                return;
+            }
+            
+            requestAnimationFrame(animate);
+        };
+        
+        animate();
+    }
+
+    shootMissile(x, y) {
+        const missile = new HomingMissile(this, x, y);
+        this.missiles.push(missile);
+        this.worldContainer.addChild(missile.sprite);
     }
     
     updateHealthBar() {
@@ -649,37 +1109,7 @@ export class Game {
         musicBtn.title = 'Toggle Music';
         container.appendChild(musicBtn);
         
-        // Стилі
-        const style = document.createElement('style');
-        style.textContent = `
-            #sound-btn, #music-btn {
-                position: absolute;
-                top: 15px;
-                width: 40px;
-                height: 40px;
-                background: rgba(0, 0, 0, 0.7);
-                border: 1px solid rgba(0, 255, 242, 0.4);
-                border-radius: 8px;
-                font-size: 20px;
-                cursor: pointer;
-                z-index: 100;
-                transition: all 0.2s;
-            }
-            #sound-btn {
-                right: 190px;
-            }
-            #music-btn {
-                right: 235px;
-            }
-            #sound-btn:hover, #music-btn:hover {
-                background: rgba(0, 255, 242, 0.2);
-                transform: scale(1.1);
-            }
-            #music-btn.off {
-                opacity: 0.5;
-            }
-        `;
-        document.head.appendChild(style);
+        // Стилі винесені в styles/style.css
         
         // Клік - перемикає звукові ефекти
         sfxBtn.addEventListener('click', () => {

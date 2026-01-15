@@ -296,8 +296,13 @@ export class Player {
     }
     
     respawn() {
-        this.x = 100;
-        this.y = 400;
+        const spawn = this.game.spawnPoint || { x: 100, y: 400 };
+        this.respawnTo(spawn.x, spawn.y);
+    }
+    
+    respawnTo(x, y) {
+        this.x = x;
+        this.y = y;
         this.velocityX = 0;
         this.velocityY = 0;
         this.isBig = false;
