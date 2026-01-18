@@ -711,9 +711,11 @@ export class Game {
                         <p>${u.desc}</p>
                         <div class="upgrade-preview">${u.preview}</div>
                         <div class="upgrade-levels">
-                            ${u.levels.map((lvl, i) => `
-                                <span class="level-dot ${i <= baseLevel ? 'active' : ''} ${inCart && i === cartLevel ? 'pending' : ''}" title="${lvl}"></span>
-                            `).join('')}
+                            ${u.levels.map((lvl, i) => {
+                                const isActive = !inCart ? (i <= baseLevel) : (i < cartLevel);
+                                const isPending = inCart && i === cartLevel;
+                                return `<span class="level-dot ${isActive ? 'active' : ''} ${isPending ? 'pending' : ''}" title="${lvl}"></span>`;
+                            }).join('')}
                         </div>
                         <div class="current-level">
                             ${inCart ? `<span class="pending-text">→ ${u.levels[cartLevel]}</span>` : u.levels[baseLevel]}
