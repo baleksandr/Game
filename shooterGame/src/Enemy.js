@@ -7,25 +7,77 @@ export class Enemy {
         this.y = y;
         this.type = type;
         
+        // Базові характеристики залежно від типу
         if (type === 'heavy') {
             this.width = 65;
             this.height = 55;
-            this.health = 3;
-            this.speed = 1.2;
+            this.baseHealth = 3;
+            this.baseSpeed = 1.2;
             this.shootChance = 0.015;
         } else {
             this.width = 45;
             this.height = 40;
-            this.health = 1;
-            this.speed = 2.2;
+            this.baseHealth = 1;
+            this.baseSpeed = 2.2;
             this.shootChance = 0.008;
         }
+        
+        // Масштабування характеристик залежно від рівня
+        const level = game.level || 1;
+        const levelMultiplier = 1 + (level - 1) * 0.25; // +25% за кожен рівень
+        
+        this.health = Math.floor(this.baseHealth * levelMultiplier);
+        this.maxHealth = this.health;
+        this.speed = this.baseSpeed * (1 + (level - 1) * 0.1); // +10% швидкості за рівень
+        this.shootChance = Math.min(this.shootChance * (1 + (level - 1) * 0.15), 0.03); // +15% шансу стрілянини
         
         this.velocityX = (Math.random() - 0.5) * 2;
         this.oscillation = Math.random() * Math.PI * 2;
         this.animTime = Math.random() * 100;
         
         this.container = this.createSprite();
+        
+        // Додаємо індикатор здоров'я для ворогів з більш ніж 1 HP
+        if (this.maxHealth > 1) {
+            this.createHealthBar();
+        }
+    }
+    
+    createHealthBar() {
+        this.healthBarContainer = new Container();
+        
+        // Фон health bar
+        this.healthBarBg = new Graphics();
+        this.healthBarBg.rect(-this.width / 2, -this.height / 2 - 10, this.width, 4);
+        this.healthBarBg.fill(0x330000);
+        this.healthBarBg.stroke({ width: 1, color: 0x660000 });
+        this.healthBarContainer.addChild(this.healthBarBg);
+        
+        // Заповнення health bar
+        this.healthBarFill = new Graphics();
+        this.updateHealthBarFill();
+        this.healthBarContainer.addChild(this.healthBarFill);
+        
+        this.container.addChild(this.healthBarContainer);
+    }
+    
+    updateHealthBarFill() {
+        if (!this.healthBarFill) return;
+        
+        this.healthBarFill.clear();
+        const healthPercent = this.health / this.maxHealth;
+        const barWidth = this.width * healthPercent;
+        
+        // Колір залежно від здоров'я
+        let color = 0x00ff00; // Зелений
+        if (healthPercent < 0.3) {
+            color = 0xff0000; // Червоний
+        } else if (healthPercent < 0.6) {
+            color = 0xffaa00; // Помаранчевий
+        }
+        
+        this.healthBarFill.rect(-this.width / 2, -this.height / 2 - 10, barWidth, 4);
+        this.healthBarFill.fill(color);
     }
     
     createSprite() {
@@ -360,6 +412,9 @@ export class Enemy {
     
     takeDamage(amount) {
         this.health -= amount;
+        
+        // Оновлюємо health bar
+        this.updateHealthBarFill();
         
         // Ефект попадання - мигання
         this.container.alpha = 0.5;

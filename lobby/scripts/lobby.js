@@ -51,10 +51,17 @@ function startShootingStars() {
 
 // Вимкнути музику лоббі
 function stopLobbyMusic() {
-    bgMusic.pause();
+    if (bgMusic) {
+        bgMusic.pause();
+        bgMusic.currentTime = 0;
+        bgMusic.volume = 0;
+        bgMusic.src = '';
+    }
     musicEnabled = false;
-    volumeInTheLobby.classList.add('muted');
-    volumeInTheLobby.style.backgroundImage = "url('img/soundOff.png')";
+    if (volumeInTheLobby) {
+        volumeInTheLobby.classList.add('muted');
+        volumeInTheLobby.style.backgroundImage = "url('img/soundOff.png')";
+    }
 }
 
 // Запуск гри
@@ -526,4 +533,22 @@ document.addEventListener('DOMContentLoaded', () => {
     
     // Якщо браузер заблокував - запустити при першому кліку
     document.addEventListener('click', startMusicOnInteraction);
+});
+
+// Зупинити музику при виході зі сторінки
+window.addEventListener('beforeunload', () => {
+    if (bgMusic) {
+        bgMusic.pause();
+        bgMusic.currentTime = 0;
+        bgMusic.src = '';
+    }
+});
+
+// Зупинити музику при переході на іншу сторінку
+window.addEventListener('pagehide', () => {
+    if (bgMusic) {
+        bgMusic.pause();
+        bgMusic.currentTime = 0;
+        bgMusic.src = '';
+    }
 });

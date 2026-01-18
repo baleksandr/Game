@@ -1,4 +1,3 @@
-// const playSound = new Audio();
 const playSound = document.createElement('audio');
 const playButton = document.querySelector('#play')
 const mixingButton = document.querySelector('#mixing')
@@ -25,7 +24,6 @@ let inputTrack = document.querySelector('input');
 let curr_time = document.querySelector(".current-time");
 let total_duration = document.querySelector(".total-duration");
 let seek_slider = document.querySelector(".seek_slider");
-// track.min = 0;
 let updateTimer;
 let timerId;
 
@@ -83,18 +81,14 @@ function resetValues() {
     seek_slider.value = 0;
 }
 
-// randomSound();
 outSound.innerText = defOutText;
 soundLength = Object.keys(soundMap).length;
 
 function sound() {
     clearInterval(updateTimer);
-    // clearInterval(timerId);
     let trackId;
     let value = 0.08;
     let volume;
-    // let playButtonState = true;
-    // playSound.volume = 0.02;
 
     volume = "tetrisSound" in localStorage ? localStorage.tetrisSound : 0.56
     localStorage.setItem("tetrisSound", `${volume}`);
@@ -103,29 +97,20 @@ function sound() {
 
 
     playSound.onloadedmetadata = function () {
-        // clearTimeout(timerId);
-        // timerId = setInterval(roundState ? nextSound : randomSound, playSound.duration * 1000);
-
-        // console.log(+(playSound.duration * 1000).toFixed(0))
     }
 
     playSound.ontimeupdate = function (e) {
         if (playSound.currentTime === playSound.duration) {
-            // clearTimeout(timerId);
             clearTimeout(updateTimer);
             updateTimer = setInterval(seekUpdateSound, 1000);
-            // timerId = setInterval(roundState ? nextSound : randomSound, playSound.duration * 1000);
-
             roundState ? nextSound() : randomSound();
         }
     }
 
 
     playButton.addEventListener('click', function (e) {
-            // clearTimeout(timerId);
             updateTimer = setInterval(seekUpdateSound, 1000);
             playButtonState ? playSoundState() : pauseSoundState();
-
         }
     );
 
@@ -161,27 +146,9 @@ function sound() {
             random = 0;
         }
         localStorage.setItem("numberTrack", `${random}`);
-        localStorage.audioLastTime = 0;  // reset time
+        localStorage.audioLastTime = 0;
         playButtonState ? playSound.pause() : playSoundState();
     }
-
-    // function playTrack() {
-    //     // console.log("random", random);
-    //     outSound.innerText = soundMap[random];
-    //     playSound.src = `sound/${soundMap[random]}.mp3`;
-    //     playButtonState = false
-    //     playSound.play();
-    //
-    //     localStorage.setItem("numberTrack", `${random}`);
-    //
-    //     clearTimeout(timerId);
-    //     playButton.src = STOP_IMAGE;
-    //
-    //     if (rightSoundMenu.childNodes.length) {
-    //         document.querySelectorAll('.rightSoundMenu .activeSoundTrack').forEach(n => n.classList.remove('activeSoundTrack'));
-    //         rightSoundMenu.children[random].className = "activeSoundTrack";
-    //     }
-    // }
 
     volumeUp.addEventListener('click', function () {
         volume = localStorage.getItem("tetrisSound");
@@ -250,11 +217,6 @@ function sound() {
                 console.log("random", random)
                 rightSoundMenu.children[random].className = "activeSoundTrack";
                 console.log("rightSoundMenu.children[random]", rightSoundMenu.children[random])
-                // if (rightSoundMenu.children[random].className === undefined ) {
-                //     rightSoundMenu.children[0].className = "activeSoundTrack";
-                // } else {
-                //     rightSoundMenu.children[random].className = "activeSoundTrack";
-                // }
             }
         } else if (e.target.className === "active fas fa-chevron-left") {
             setTimeout(() => genericClick("generic_click", 0.32), 100);
@@ -269,8 +231,6 @@ function sound() {
     });
 
     function createAndAppendRightMenu() {
-        let menu = document.createElement("menu");
-        // console.log("soundLength", soundLength)
         for (let i = 0; i < soundLength; i++) {
             let p = document.createElement("p");
             p.innerText = soundMap[i];
@@ -278,8 +238,14 @@ function sound() {
         }
     }
 
-    rightSoundMenu.addEventListener('dblclick', function (e) {
+    // Перевірка чи це мобільний пристрій
+    const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+    const eventType = isMobile ? 'click' : 'dblclick';
+    
+    rightSoundMenu.addEventListener(eventType, function (e) {
         if (e.target.tagName === "DIV") return;
+        if (!isMobile && e.target.className === "clickedTrack") return; // На десктопі пропускаємо перший клік
+        
         setTimeout(() => genericClick(1, 0.20), 100);
         document.querySelectorAll('.rightSoundMenu .activeSoundTrack').forEach(n => n.classList.remove('activeSoundTrack'));
 
@@ -288,32 +254,29 @@ function sound() {
         random = Object.values(soundMap).indexOf(target);
         playButtonState = false
         localStorage.setItem("numberTrack", `${random}`);
-        // clearTimeout(timerId);
         localStorage.audioLastTime = 0;
         clearTimeout(updateTimer);
         updateTimer = setInterval(seekUpdateSound, 1000);
         playSoundState()
     });
 
-    rightSoundMenu.addEventListener('click', function (e) {
-        if (e.target.tagName === "DIV") return;
-        if (e.target.className === "activeSoundTrack") return;
-        if (e.target.className === "clickedTrack") {
-            e.target.className = "";
-        } else {
-            document.querySelectorAll('.rightSoundMenu .clickedTrack').forEach(n => n.classList.remove('clickedTrack'));
-            e.target.className = "clickedTrack";
-        }
-    });
+    // Для десктопа залишаємо логіку одинарного кліку (виділення)
+    if (!isMobile) {
+        rightSoundMenu.addEventListener('click', function (e) {
+            if (e.target.tagName === "DIV") return;
+            if (e.target.className === "activeSoundTrack") return;
+            if (e.target.className === "clickedTrack") {
+                e.target.className = "";
+            } else {
+                document.querySelectorAll('.rightSoundMenu .clickedTrack').forEach(n => n.classList.remove('clickedTrack'));
+                e.target.className = "clickedTrack";
+            }
+        });
+    }
 }
 
 function seekTimeTo() {
-// Calculate the seek position by the
-// percentage of the seek slider
-// and get the relative duration to the track
     seekto = playSound.duration * (seek_slider.value / 100);
-
-// Set the current track position to the calculated seek position
     playSound.currentTime = seekto;
 }
 
@@ -338,13 +301,11 @@ function seekUpdateSound() {
         seekPosition = playSound.currentTime * (100 / playSound.duration);
         seek_slider.value = seekPosition;
 
-        // Calculate the time left and the total duration
         let currentMinutes = Math.floor(playSound.currentTime / 60);
         let currentSeconds = Math.floor(playSound.currentTime - currentMinutes * 60);
         let durationMinutes = Math.floor(playSound.duration / 60);
         let durationSeconds = Math.floor(playSound.duration - durationMinutes * 60);
 
-        // Display the updated duration
         curr_time.textContent = formatTime(currentMinutes * 60 + currentSeconds);
         total_duration.textContent = formatTime(durationMinutes * 60 + durationSeconds);
     }

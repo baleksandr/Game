@@ -6,9 +6,12 @@ export class PowerUp {
         this.x = x;
         this.y = y;
         
-        // Типи апгрейдів
-        const types = ['shield', 'doubleShot', 'tripleShot', 'speed', 'health'];
-        this.type = type === 'random' ? types[Math.floor(Math.random() * types.length)] : type;
+        // Вибір типу з урахуванням рівня
+        if (type === 'random') {
+            this.type = this.selectRandomType();
+        } else {
+            this.type = type;
+        }
         
         this.width = 30;
         this.height = 30;
@@ -18,11 +21,32 @@ export class PowerUp {
         this.animTime = Math.random() * 100;
         this.oscillation = Math.random() * Math.PI * 2;
         
-        // Властивості для бонусів рівня
+        // Властивості для бонусів рівня та куплених апгрейдів
         this.isLevelBonus = false;
+        this.isPurchased = false;
         this.lifeTime = undefined;
         
         this.container = this.createSprite();
+    }
+    
+    selectRandomType() {
+        // Базові типи апгрейдів
+        const types = ['shield', 'doubleShot', 'tripleShot', 'speed', 'health'];
+        
+        // Шанс health зменшується з кожним рівнем
+        const level = this.game.level || 1;
+        const healthChance = Math.max(0.05, 0.3 - (level - 1) * 0.03); // Від 30% до 5%
+        
+        // Випадкове число для визначення типу
+        const rand = Math.random();
+        
+        if (rand < healthChance) {
+            return 'health';
+        }
+        
+        // Решта типів розподіляються рівномірно
+        const otherTypes = types.filter(t => t !== 'health');
+        return otherTypes[Math.floor(Math.random() * otherTypes.length)];
     }
     
     getConfig() {

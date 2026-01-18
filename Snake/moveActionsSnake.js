@@ -142,14 +142,14 @@ function moveSnake(direction) {
 
     if (isObstacleCell(newHead)) {
         playSnake("game_over", 1);
-        gameOverSnake.style.display = 'flex';
+        gameOverSnake.classList.add('show');
         stopGame();
         return;
     }
 
     if (snakeCollidesWithItself(newHead, willGrow)) {
         playSnake("game_over", 1);
-        gameOverSnake.style.display = 'flex';
+        gameOverSnake.classList.add('show');
         stopGame()
         return;
     }
@@ -347,7 +347,7 @@ restartSnake.addEventListener("click", () => {
     updateSpeedBar();
     
     pauseGame.style.display = 'flex';
-    gameOverSnake.style.display = 'none';
+    gameOverSnake.classList.remove('show');
     placeSnakeAndFood();
     stopGame();
 })

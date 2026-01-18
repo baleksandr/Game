@@ -18,7 +18,7 @@ let bonusTimer = null;
 // let food = { row: randomPosition(), column: randomPosition() }; // Initial position of the food
 let isPausedGame = true;
 pauseGame.style.display = 'none';
-gameOverSnake.style.display= 'none';
+gameOverSnake.classList.remove('show');
 
 if (isPausedGame) pauseGame.style.display = 'flex';
 placeSnakeAndFood();

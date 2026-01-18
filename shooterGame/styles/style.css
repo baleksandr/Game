@@ -398,12 +398,115 @@ body {
 }
 
 @media (max-width: 768px) {
+    body {
+        padding: 0;
+        align-items: flex-start;
+    }
+    
+    #game-container {
+        width: 100vw !important;
+        height: 100vh !important;
+        border-radius: 0;
+        border: none;
+    }
+    
+    #game-container canvas {
+        width: 100% !important;
+        height: 100% !important;
+        object-fit: contain;
+    }
+    
     .mobile-controls {
         display: flex;
     }
     
+    .top-bar {
+        flex-wrap: wrap;
+        gap: 8px;
+        padding: 8px;
+        font-size: 11px;
+    }
+    
+    .level-panel, .score-panel, .wave-panel, .health-panel {
+        min-width: auto;
+        padding: 6px 10px;
+    }
+    
+    .label {
+        font-size: 9px;
+    }
+    
+    .value {
+        font-size: 14px;
+    }
+    
+    .health-bar {
+        width: 60px;
+        height: 8px;
+    }
+    
+    .level-progress {
+        padding: 6px 10px;
+        font-size: 10px;
+    }
+    
+    .level-progress-bar {
+        height: 8px;
+    }
+    
     .logo h1 {
         font-size: 24px;
+    }
+    
+    /* Адаптація магазину для мобільних */
+    .shop-panel {
+        width: 95vw !important;
+        max-width: 95vw !important;
+        max-height: 90vh;
+        padding: 15px;
+        overflow-y: auto;
+    }
+    
+    .shop-panel h3 {
+        font-size: 18px;
+    }
+    
+    .shop-subtitle {
+        font-size: 11px;
+    }
+    
+    .shop-grid {
+        grid-template-columns: 1fr;
+        gap: 12px;
+    }
+    
+    .shop-card {
+        padding: 12px;
+    }
+    
+    .shop-card h4 {
+        font-size: 14px;
+    }
+    
+    .shop-card p {
+        font-size: 10px;
+    }
+    
+    .shop-actions {
+        flex-direction: column;
+        gap: 15px;
+        margin-top: 15px;
+    }
+    
+    .confirm-btn, .skip-btn {
+        width: 100%;
+        padding: 15px;
+        font-size: 14px;
+        min-height: 50px;
+    }
+    
+    .skip-btn {
+        margin-top: 10px;
     }
 }
 
@@ -636,8 +739,62 @@ body {
 }
 
 @media (max-width: 500px) {
+    .top-bar {
+        font-size: 10px;
+        padding: 6px;
+        gap: 6px;
+    }
+    
+    .level-panel, .score-panel, .wave-panel, .health-panel {
+        padding: 5px 8px;
+    }
+    
+    .label {
+        font-size: 8px;
+    }
+    
+    .value {
+        font-size: 12px;
+    }
+    
+    .health-bar {
+        width: 50px;
+        height: 6px;
+    }
+    
+    .level-progress {
+        padding: 5px 8px;
+        font-size: 9px;
+    }
+    
+    .level-progress-bar {
+        height: 6px;
+    }
+    
     .shop-grid {
         grid-template-columns: 1fr;
+    }
+    
+    .shop-panel {
+        padding: 12px;
+    }
+    
+    .shop-panel h3 {
+        font-size: 16px;
+    }
+    
+    .shop-subtitle {
+        font-size: 10px;
+    }
+    
+    .control-btn {
+        width: 60px;
+        height: 60px;
+        font-size: 24px;
+    }
+    
+    .d-pad, .action-btns {
+        gap: 10px;
     }
 }
 

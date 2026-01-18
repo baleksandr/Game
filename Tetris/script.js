@@ -22,19 +22,16 @@ const TETROMINOES = {
 }
 
 let localtime = document.querySelector('.localtime');
-// let settings = document.querySelector('.settings');
 let settings = document.querySelector('.loader');
 let scoreTetris = document.querySelector('.score');
 let bestScoreTetris = document.querySelector('.bestScore');
 let speedLvl = document.querySelector('.speed');
 let collectedLines = document.querySelector('.collected');
-// let timeToPlay = document.querySelector('.timeToPlay');
 let nextElement = document.querySelector('.nextElement');
 let newImage = 0;
-let imageBack;``
+let imageBack;
 let settingKey = false;
 
-// Timer files
 const hourElement = document.querySelector('.hour');
 const minuteElement = document.querySelector('.minutes');
 const secondElement = document.querySelector('.seconds');
@@ -63,8 +60,6 @@ const change_backButton = document.querySelector(".change_back");
 const change_background = document.querySelector(".change_background");
 const change_block_color = document.querySelector("#change_block_color");
 
-
-//Variables
 let hour = 0,
     minute = 0,
     second = 0,
@@ -72,7 +67,6 @@ let hour = 0,
     timeInterval,
     soundId,
     volume,
-    // resultStorage = {},
     speedIncrease;
 
 
@@ -150,9 +144,6 @@ alertYes.addEventListener('click', () => {
     bestScoreTetris.innerText = bestScore;
     clearAllResults();
     soundId = setTimeout(() => genericClick("generic_click", 0.25), 100);
-    // resultStorage.clear();
-    // generateNeWTetromino();
-    // randomElement();
 });
 
 alertNo.addEventListener('click', () => {
@@ -172,7 +163,6 @@ function restartGame() {
 
 }
 
-// const scoreDefOutText = scoreTetris.innerText;
 function convertPositionToIndex(row, column) {
     return row * PLAYFIELD_COLUMNS + column;
 }
@@ -185,7 +175,6 @@ function generateNewPlayField() {
     for (let i = 0; i < NEW_PLAYFIELD_ROWS * NEW_PLAYFIELD_COLUMNS; i++) {
         const div = document.createElement('div');
         document.querySelector('.nextElement').append(div);
-        // document.querySelector('.grid').removeAttribute(".div");
     }
 
     newPlayField = new Array(NEW_PLAYFIELD_ROWS).fill().map(() => new Array(NEW_PLAYFIELD_COLUMNS).fill(0));
@@ -196,14 +185,12 @@ function generatePlayField() {
     for (let i = 0; i < PLAYFIELD_ROWS * PLAYFIELD_COLUMNS; i++) {
         const div = document.createElement('div');
         document.querySelector('.grid').append(div);
-        // document.querySelector('.grid').removeAttribute(".div");
     }
 
     playField = new Array(PLAYFIELD_ROWS).fill().map(() => new Array(PLAYFIELD_COLUMNS).fill(0));
 }
 
 function randomTetrominoElement(array) {
-    // случайное число от min до (max+1)
     return array[Math.floor(Math.random() * array.length)];
 }
 
@@ -218,36 +205,19 @@ function setColor() {
     return color;
 }
 
-//
 let color = setColor();
 
-// console.log("setColor()", color)
-
 function randomElement() {
-    // console.log("TETROMONO_NAMES", TETROMONO_NAMES)
-    // tetrominoElement = randomTetrominoElement(TETROMONO_NAMES);
-    // console.log("randomElement tetrominoElement", tetrominoElement)
     return randomTetrominoElement(TETROMONO_NAMES)
 }
 
-// randomElement();
-
-
 function generateNeWTetromino() {
-    // const name = randomElement();
-    // tetrominoElement.length = 2;
-    //     tetrominoElement.splice(1,2,randomElement());
     tetrominoElement.unshift(randomElement());
     if (tetrominoElement.length > 2) {
         tetrominoElement.pop();
     }
 
-    // newTetroGenerate = true;
-
     const matrix = TETROMINOES[tetrominoElement[0]];
-    // tetrominoElement = name;
-
-    // console.log("generateNeWTetromino tetrominoElement", tetrominoElement)
     const columnTetromino = NEW_PLAYFIELD_COLUMNS / 2 - Math.floor(matrix.length / 2);
     const rowTetro = 0;
 
@@ -257,14 +227,10 @@ function generateNeWTetromino() {
         row: rowTetro,
         column: columnTetromino,
     }
-    // console.log("tetromono.row", newTetromono.row)
 }
 
 
 function generateTetromino(tetroRandom) {
-    // const name = randomElement();
-    // console.log("generateTetromino tetroRandom", tetroRandom[0])
-    // console.log("generateTetromino tetrominoElement", tetroRandom)
     const matrix = TETROMINOES[tetroRandom[0]];
     const columnTetromino = PLAYFIELD_COLUMNS / 2 - Math.floor(matrix.length / 2);
     const rowTetro = -3;
@@ -276,8 +242,6 @@ function generateTetromino(tetroRandom) {
         row: rowTetro,
         column: columnTetromino,
     }
-    // generateNeWTetromino();
-    // randomElement();
 }
 
 function placeTetromino(tetElement) {
@@ -294,39 +258,7 @@ function placeTetromino(tetElement) {
             }
         }
     }
-    // generateTetromino(tetElement);
-    // drawPlayField();
 }
-
-// function placeNewTetromino() {
-//     const matrixSize = newTetromono.matrix.length;
-//     for (let row = 0; row < matrixSize; row++) {
-//         for (let column = 0; column < matrixSize; column++) {
-//             if (newTetromono.matrix[row][column]) {
-//                 newPlayField[row][column] = newTetromono.name
-//                 newPlayField[newTetromono.row + row][newTetromono.column + column] = newTetromono.name
-//                 // playField[tetromono.row + row][tetromono.column + column] = tetromono.name
-//             }
-//         }
-//     }
-//     generateNeWTetromino();
-// }
-
-
-// function drawNewPlayField() {
-//     for (let row = 0; row < NEW_PLAYFIELD_ROWS; row++) {
-//         for (let column = 0; column < NEW_PLAYFIELD_COLUMNS; column++) {
-//             if (newPlayField[row][column] === 0) continue;
-//
-//             const name = newPlayField[row][column];
-//             console.log("drawNewPlayField name", name)
-//             const cellIndex = convertNewPositionToIndex(row, column);
-//             cellsNew[cellIndex].classList.add(name)
-//             // console.log(cellsNew[cellIndex].classList.add(name))
-//             // cells[cellIndex].style.backgroundColor = color;
-//         }
-//     }
-// }
 
 function drawPlayField() {
     for (let row = 0; row < PLAYFIELD_ROWS; row++) {
@@ -337,26 +269,21 @@ function drawPlayField() {
             const cellIndex = convertPositionToIndex(row, column);
 
             cells[cellIndex].classList.add(name)
-            // cells[cellIndex].style.backgroundColor = color;
         }
     }
 }
 
 function drawNewTetromino() {
-    // let color = setColor();
     const name = newTetromono.name;
     const tetrominoMatrixSizeNew = newTetromono.matrix.length;
 
     for (let row = 0; row < tetrominoMatrixSizeNew; row++) {
         for (let column = 0; column < tetrominoMatrixSizeNew; column++) {
-
-            // if (isOutsideOfTopGameBoard(row)) continue;
             if (!newTetromono.matrix[row][column]) continue;
 
             const cellIndex = convertNewPositionToIndex(newTetromono.row + row, newTetromono.column + column);
 
             cellsNew[cellIndex].classList.add(name);
-            // cellsNew[cellIndex].style.backgroundColor = color;
         }
     }
 }
@@ -373,15 +300,7 @@ function drawTetromino() {
 
             const cellIndex = convertPositionToIndex(tetromono.row + row, tetromono.column + column);
 
-
-            // cells[cellIndex].innerHTML = showRotated[row][column]
-            // cells[cellIndex].style.backgroundColor = color;
-
-            // if (newTetroGenerate === false) {
-            //     cells[cellIndex].classList.add(name);
-            // }
             cells[cellIndex].classList.add(name);
-            // cells[cellIndex].classList.add(tetrominoElement[0]);
         }
     }
 }
@@ -389,11 +308,9 @@ function drawTetromino() {
 function draw() {
     cellsNew.forEach(cell => cell.removeAttribute('class'));
     cells.forEach(cell => cell.removeAttribute('class'));
-    // cells.forEach(cell => cell.style.backgroundColor = null);
 
     drawNewTetromino();
     drawPlayField();
-    // drawNewPlayField();
     drawTetromino();
 }
 
@@ -401,7 +318,6 @@ let showRotated = [[1, 2, 3], [4, 5, 6], [7, 8, 9]]
 
 function rotateTetramino() {
     const oldMatrix = tetromono.matrix;
-    // showRotated = rotateMatrix(showRotated)
     tetromono.matrix = rotateMatrix((tetromono.matrix))
 
     if (!isValid()) {
@@ -431,7 +347,6 @@ function dropTetraminoDown() {
 }
 
 function moveDown() {
-    // newTetroGenerate = false;
     removeFullRows();
     moveTetraminoDown();
     draw();
@@ -466,7 +381,6 @@ function gameAction() {
             e.target.parentNode.classList[1] = 'active'
             soundId = setTimeout(() => genericClick("generic_click", 0.32), 100);
         }
-        // moveArrow(isPaused);
     });
 }
 
@@ -475,8 +389,6 @@ function gameOver() {
     overlay.style.display = 'flex'
     soundId = setTimeout(() => genericClick("page_complete", 0.32), 100);
 }
-
-// gameOver();
 
 function stopLoop() {
     setTimeout(() => {
@@ -514,7 +426,6 @@ function isValid() {
     const matrixSize = tetromono.matrix.length
     for (let row = 0; row < matrixSize; row++) {
         for (let column = 0; column < matrixSize; column++) {
-            // if(tetromono.matrix[row][column]) continue;
             if (isOutSideOfGameBoard(row, column)) {
                 return false;
             }
@@ -544,7 +455,6 @@ function removeFullRows() {
             playField.splice(row, 1);
             playField.unshift(new Array(PLAYFIELD_COLUMNS).fill(0));
             rowCleared++;
-            // console.log("rowCleared", rowCleared)
         }
     }
     collectedLinesAmount += rowCleared
@@ -553,7 +463,6 @@ function removeFullRows() {
 }
 
 function isOutsideOfTopGameBoard(row) {
-    // console.log(tetromono.row + row < 0)
     return tetromono.row + row < 0;
 }
 
@@ -580,21 +489,6 @@ function scoreValue(amount) {
 
     updateSpeed();
 }
-
-// function updateSpeed() {
-//     speedIncrease = Math.floor(score / SCORE_DIVISOR) * SPEED_INCREASE_FACTOR;
-//     const newSpeed = BASE_SPEED * (1 - speedIncrease);
-//
-//     if (updatedSpeed > newSpeed) {
-//         updatedSpeed = newSpeed
-//         speedLvl.innerHTML = `${++speedValue}`
-//     }
-//     speed = Math.max(MIN_SPEED, newSpeed);
-//     clearInterval(timerId);
-//     timerId = setInterval(() => moveDown(), speed);
-// }
-
-// let test = document.querySelectorAll('.blockResults'); // обращаю внимание на точку
 
 clearResults.addEventListener('click', () => {
     clearAllResults();
@@ -673,7 +567,6 @@ function playSoundState() {
     outSound.innerText = soundMap[random];
     playSound.src = `sound/${soundMap[random]}.mp3`;
     playSound.currentTime = "audioLastTime" in localStorage ? localStorage.audioLastTime : 0
-    // console.log("random", random)
     playSound.play();
 
     if (rightSoundMenu.childNodes.length) {

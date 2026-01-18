@@ -78,6 +78,13 @@ export class Game {
         const container = document.getElementById('game-container');
         container.appendChild(this.app.canvas);
         
+        // Адаптація під розмір екрану
+        this.resizeCanvas();
+        window.addEventListener('resize', () => this.resizeCanvas());
+        window.addEventListener('orientationchange', () => {
+            setTimeout(() => this.resizeCanvas(), 100);
+        });
+        
         this.worldContainer = new Container();
         this.app.stage.addChild(this.worldContainer);
         
@@ -234,7 +241,7 @@ export class Game {
                 if (powerUp.lifeTime <= 0) {
                     this.worldContainer.removeChild(powerUp.container);
                     this.powerUps.splice(i, 1);
-                    this.showMessage('Бонус зник!', 0xff6666);
+                    this.showMessage('Bonus disappeared!', 0xff6666);
                     continue;
                 }
             }
@@ -632,9 +639,9 @@ export class Game {
         const upgrades = [
             { 
                 id: 'guns', 
-                title: '🔫 ПУШКИ', 
-                desc: 'Швидша стрільба та більше снарядів',
-                levels: ['Базові пушки', 'Подвійний постріл', 'Швидкострільні', 'Максимальна потужність'],
+                title: '🔫 GUNS', 
+                desc: 'Faster fire rate and more projectiles',
+                levels: ['Basic guns', 'Double shot', 'Rapid fire', 'Maximum power'],
                 costs: [0, 200, 400, 800],
                 color: '#ff8c42',
                 preview: '● ● → ●●● → 🔥🔥🔥',
@@ -642,9 +649,9 @@ export class Game {
             },
             { 
                 id: 'blasters', 
-                title: '⚡ БЛАСТЕРИ', 
-                desc: 'Додаткові кулі під кутом',
-                levels: ['Немає', 'Бічні бластери', 'Triple shot', 'Омні-бластери'],
+                title: '⚡ BLASTERS', 
+                desc: 'Additional bullets at angles',
+                levels: ['None', 'Side blasters', 'Triple shot', 'Omni-blasters'],
                 costs: [0, 300, 600, 1000],
                 color: '#c040ff',
                 preview: '↑ → ↖↑↗ → 🌟360°',
@@ -652,9 +659,9 @@ export class Game {
             },
             { 
                 id: 'missiles', 
-                title: '🚀 РАКЕТИ', 
-                desc: 'Самонавідні ракети з високою шкодою',
-                levels: ['Немає', 'Базові ракети', 'Швидкі ракети', 'Мега-ракети'],
+                title: '🚀 MISSILES', 
+                desc: 'Homing missiles with high damage',
+                levels: ['None', 'Basic missiles', 'Fast missiles', 'Mega-missiles'],
                 costs: [0, 350, 700, 1200],
                 color: '#ffc400',
                 preview: '🚀 → 🚀🚀 → 💥💥💥',
@@ -693,7 +700,7 @@ export class Game {
                         <div class="shop-card locked" data-id="${u.id}">
                             <h4 style="color:#666">🔒 ${u.title}</h4>
                             <p style="color:#888">${u.desc}</p>
-                            <div class="locked-label">Доступно з рівня ${u.minLevel}</div>
+                            <div class="locked-label">Available from level ${u.minLevel}</div>
                         </div>
                     `;
                 }
@@ -712,13 +719,13 @@ export class Game {
                             ${inCart ? `<span class="pending-text">→ ${u.levels[cartLevel]}</span>` : u.levels[baseLevel]}
                         </div>
                         ${maxed ? 
-                            '<div class="maxed-label">МАКСИМУМ</div>' : 
-                            `<div class="price ${canAfford || inCart ? '' : 'cant-afford'}">${inCart ? `Обрано: ${u.costs[cartLevel]}¢` : `Наступний: ${cost}¢`}</div>
+                            '<div class="maxed-label">MAXED</div>' : 
+                            `<div class="price ${canAfford || inCart ? '' : 'cant-afford'}">${inCart ? `Selected: ${u.costs[cartLevel]}¢` : `Next: ${cost}¢`}</div>
                             <div class="card-actions">
                                 ${inCart ? 
-                                    `<button class="remove-btn" data-upg="${u.id}">✕ Відмінити</button>` :
+                                    `<button class="remove-btn" data-upg="${u.id}">✕ Cancel</button>` :
                                     `<button class="add-btn" data-upg="${u.id}" ${canAfford ? '' : 'disabled'}>
-                                        ${canAfford ? '+ Додати' : 'Недостатньо'}
+                                        ${canAfford ? '+ Add' : 'Not enough'}
                                     </button>`
                                 }
                             </div>`
@@ -736,25 +743,25 @@ export class Game {
             }).join('');
             
             panelContainer.innerHTML = `
-                <h3>🎉 РІВЕНЬ ${this.level} ЗАВЕРШЕНО!</h3>
-                <div class="shop-subtitle">Оберіть апгрейди для корабля (можна декілька)</div>
+                <h3>🎉 LEVEL ${this.level} COMPLETE!</h3>
+                <div class="shop-subtitle">Choose ship upgrades (multiple allowed)</div>
                 <div class="shop-credits">
                     <span class="credits-icon">💰</span>
-                    Доступно: <strong id="available-credits">${availableCredits.toLocaleString()}</strong> / ${this.levelCredits.toLocaleString()}¢
+                    Available: <strong id="available-credits">${availableCredits.toLocaleString()}</strong> / ${this.levelCredits.toLocaleString()}¢
                 </div>
                 <div class="shop-grid">${cards}</div>
                 ${cart.size > 0 ? `
                     <div class="shop-cart">
-                        <div class="cart-title">🛒 Обрані апгрейди:</div>
+                        <div class="cart-title">🛒 Selected upgrades:</div>
                         <div class="cart-items">${cartItems}</div>
-                        <div class="cart-total">Разом: ${totalCost}¢</div>
+                        <div class="cart-total">Total: ${totalCost}¢</div>
                     </div>
                 ` : ''}
                 <div class="shop-actions">
                     ${cart.size > 0 ? 
-                        `<button class="confirm-btn">✓ Застосувати (${cart.size})</button>` : ''
+                        `<button class="confirm-btn">✓ Apply (${cart.size})</button>` : ''
                     }
-                    <button class="skip-btn">${cart.size > 0 ? 'Скасувати все' : 'Продовжити без апгрейдів →'}</button>
+                    <button class="skip-btn">${cart.size > 0 ? 'Cancel all' : 'Continue without upgrades →'}</button>
                 </div>
             `;
             
@@ -811,7 +818,15 @@ export class Game {
             const skipBtn = panelContainer.querySelector('.skip-btn');
             if (skipBtn) {
                 skipBtn.addEventListener('click', () => {
-                    this.closeShopAndAdvance(overlay);
+                    // Перевіряємо чи є покупки в кошику
+                    if (cart.size > 0) {
+                        // Якщо є покупки - очищуємо кошик і перерендерюємо
+                        cart.clear();
+                        renderShop();
+                    } else {
+                        // Якщо немає покупок - показуємо підтвердження
+                        this.showSkipConfirmation(overlay);
+                    }
                 });
             }
         };
@@ -857,6 +872,113 @@ export class Game {
             this.player.missileDelay = 18;
             this.player.doubleMissiles = true;
         }
+    }
+
+    showSkipConfirmation(overlay) {
+        // Створюємо попап підтвердження
+        const confirmOverlay = document.createElement('div');
+        confirmOverlay.style.cssText = `
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 10001;
+        `;
+        
+        const confirmBox = document.createElement('div');
+        confirmBox.style.cssText = `
+            background: linear-gradient(135deg, #1a1a3e 0%, #0a0a2e 100%);
+            border: 2px solid rgba(0, 255, 242, 0.5);
+            border-radius: 16px;
+            padding: 30px;
+            max-width: 400px;
+            text-align: center;
+            box-shadow: 0 0 40px rgba(0, 255, 242, 0.3);
+        `;
+        
+        confirmBox.innerHTML = `
+            <h3 style="color: #00fff2; margin: 0 0 20px 0; font-size: 22px; text-shadow: 0 0 10px rgba(0, 255, 242, 0.5);">
+                ⚠️ Skip Upgrades?
+            </h3>
+            <p style="color: #e0e0ff; margin: 0 0 30px 0; font-size: 16px; line-height: 1.5;">
+                Continue to next level without any upgrades?<br>
+                <span style="color: #ff6666; font-size: 14px;">This will make the game harder!</span>
+            </p>
+            <div style="display: flex; flex-direction: column; gap: 12px; width: 100%;">
+                <button class="confirm-no-btn" style="
+                    background: linear-gradient(135deg, #00ff88 0%, #00cc66 100%);
+                    border: 2px solid rgba(0, 255, 136, 0.5);
+                    color: #0a0a2e;
+                    padding: 15px 30px;
+                    border-radius: 8px;
+                    cursor: pointer;
+                    font-size: 16px;
+                    font-weight: bold;
+                    transition: all 0.3s ease;
+                    box-shadow: 0 0 15px rgba(0, 255, 136, 0.3);
+                    width: 100%;
+                ">
+                    ← Back to Shop
+                </button>
+                <button class="confirm-yes-btn" style="
+                    background: linear-gradient(135deg, #666 0%, #444 100%);
+                    border: 2px solid rgba(255, 100, 100, 0.5);
+                    color: white;
+                    padding: 15px 30px;
+                    border-radius: 8px;
+                    cursor: pointer;
+                    font-size: 16px;
+                    font-weight: bold;
+                    transition: all 0.3s ease;
+                    box-shadow: 0 0 15px rgba(255, 68, 68, 0.3);
+                    width: 100%;
+                ">
+                    Skip & Continue →
+                </button>
+            </div>
+        `;
+        
+        confirmOverlay.appendChild(confirmBox);
+        
+        // Кнопка "Назад до магазину" (зелена)
+        const noBtn = confirmBox.querySelector('.confirm-no-btn');
+        noBtn.addEventListener('click', () => {
+            confirmOverlay.remove();
+        });
+        
+        noBtn.addEventListener('mouseenter', () => {
+            noBtn.style.transform = 'scale(1.03)';
+            noBtn.style.boxShadow = '0 0 25px rgba(0, 255, 136, 0.5)';
+        });
+        
+        noBtn.addEventListener('mouseleave', () => {
+            noBtn.style.transform = 'scale(1)';
+            noBtn.style.boxShadow = '0 0 15px rgba(0, 255, 136, 0.3)';
+        });
+        
+        // Кнопка "Пропустити" (сіра)
+        const yesBtn = confirmBox.querySelector('.confirm-yes-btn');
+        yesBtn.addEventListener('click', () => {
+            confirmOverlay.remove();
+            this.closeShopAndAdvance(overlay);
+        });
+        
+        yesBtn.addEventListener('mouseenter', () => {
+            yesBtn.style.transform = 'scale(1.03)';
+            yesBtn.style.boxShadow = '0 0 25px rgba(255, 68, 68, 0.5)';
+        });
+        
+        yesBtn.addEventListener('mouseleave', () => {
+            yesBtn.style.transform = 'scale(1)';
+            yesBtn.style.boxShadow = '0 0 15px rgba(255, 68, 68, 0.3)';
+        });
+        
+        document.body.appendChild(confirmOverlay);
     }
 
     closeShopAndAdvance(overlay) {
@@ -980,7 +1102,7 @@ export class Game {
             this.worldContainer.addChild(powerUp.container);
             
             // Показуємо підказку
-            this.showMessage('⬇️ БОНУС! Збери апгрейд!', 0xffc400);
+            this.showMessage('⬇️ BONUS! Collect upgrade!', 0xffc400);
         }, 1500);
     }
     
@@ -1134,5 +1256,50 @@ export class Game {
         document.addEventListener('keydown', () => {
             this.sound.unlock();
         }, { once: true });
+    }
+    
+    resizeCanvas() {
+        const container = document.getElementById('game-container');
+        const isMobile = window.innerWidth <= 768;
+        
+        if (isMobile) {
+            // На мобільних пристроях canvas займає весь екран
+            const width = window.innerWidth;
+            const height = window.innerHeight;
+            
+            // Зберігаємо пропорції гри (800x600 = 4:3)
+            const gameAspect = this.screenWidth / this.screenHeight;
+            const screenAspect = width / height;
+            
+            let canvasWidth, canvasHeight;
+            
+            if (screenAspect > gameAspect) {
+                // Екран ширший за гру - підганяємо по висоті
+                canvasHeight = height;
+                canvasWidth = height * gameAspect;
+            } else {
+                // Екран вужчий за гру - підганяємо по ширині
+                canvasWidth = width;
+                canvasHeight = width / gameAspect;
+            }
+            
+            container.style.width = width + 'px';
+            container.style.height = height + 'px';
+            
+            if (this.app && this.app.canvas) {
+                this.app.canvas.style.width = canvasWidth + 'px';
+                this.app.canvas.style.height = canvasHeight + 'px';
+                this.app.canvas.style.margin = 'auto';
+            }
+        } else {
+            // На десктопі залишаємо фіксований розмір
+            container.style.width = this.screenWidth + 'px';
+            container.style.height = this.screenHeight + 'px';
+            
+            if (this.app && this.app.canvas) {
+                this.app.canvas.style.width = this.screenWidth + 'px';
+                this.app.canvas.style.height = this.screenHeight + 'px';
+            }
+        }
     }
 }
